@@ -13,6 +13,7 @@ public class Clause {
     private int variables[];
     private int size = 0;
     private int length = 0;
+    private int clauseNumber;
 
     public Clause(int size){
         variables = new int[size];
@@ -23,6 +24,13 @@ public class Clause {
         variables = var;
         size = var.length;
         length = size;
+    }
+
+    public void setClauseNumber(int clause){
+        clauseNumber = clause;
+    }
+    public int ClauseNumber(){
+        return clauseNumber;
     }
 
     public int size(){
