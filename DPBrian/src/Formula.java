@@ -7,6 +7,7 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -30,7 +31,7 @@ public class Formula {
     private int key;
     private boolean justBackTracked = false;
     private double powArray[];
-
+    private Stack<Integer> PropVarStack = new Stack< Integer>();
     /**
      * Instantiates a new formula.
      * 
@@ -91,6 +92,7 @@ public class Formula {
 
             Clause tmpClause = new Clause(tmp.length);
             tmpClause.addArray(tmp);
+            tmpClause.setClauseNumber(clause);
             clauseList[clause] = tmpClause;
             list.clear();
         } // End for
@@ -206,6 +208,13 @@ public class Formula {
         boolean swapLargest;
         float sum = 0;
         float currentMaxRank;
+        int one = 0;
+        Clause tmpClause;
+        //Length addition commented out
+        //Runs slower than external method
+//        int oneClause[][];
+//        oneClause = new int[numClauses][2];
+//        int tmp;
 
         for (int i = shift; i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
@@ -214,8 +223,9 @@ public class Formula {
             } else {
                 size = hashObj.posSize();
                 for (int j = 0; j < size; j++) {				// Sums the rank in the posList
-
-                    clength = hashObj.getP(j).size();
+                    tmpClause = hashObj.getP(j);
+                    clength = tmpClause.size();
+//                    oneClause[tmpClause.ClauseNumber()][0] += 1;
                     if (clength < powArray.length) {
                         sum += powArray[clength];
                     } else {
@@ -225,7 +235,9 @@ public class Formula {
                 size = hashObj.negSize();
                 for (int j = 0; j < size; j++) {				// Sums the rank in the negList
 
-                    clength = hashObj.getN(j).size();
+                    tmpClause = hashObj.getN(j);
+                    clength = tmpClause.size();
+//                    oneClause[tmpClause.ClauseNumber()][1] += 1;
                     if (clength < powArray.length) {
                         sum += powArray[clength];
                     } else {
@@ -247,6 +259,48 @@ public class Formula {
                 maxValue = checkValue;
                 swapLargest = true;
             }
+        }
+
+        //Tried to add length check into ranking made program slower
+        //boolean finished = false;
+
+//        for (int i = 0; i < numClauses && !finished; i++) {
+//            if (oneClause[i][0] == 1 && oneClause[i][1] == 0) {
+//                tmpClause = (Clause) clauseList[i];
+//                for (int j = 0; j < tmpClause.actualSize(); j++) {
+//                    tmp = tmpClause.get(j);
+//                    if (tmp != 0) {
+//                        one = tmp;
+//                        finished = true;
+//                    }
+//                }
+//            } else if (oneClause[i][1] == 1 && oneClause[i][0] == 0) {
+//                tmpClause = (Clause) clauseList[i];
+//                for (int j = 0; j < tmpClause.actualSize(); j++) {
+//                    tmp = tmpClause.get(j);
+//                    if (one != 0) {
+//                        one = tmp;
+//                        finished = true;
+//                    }
+//
+//                }
+//            }
+//        }
+
+        // Might be able to use ranking number for length one check
+        // Set unit variable as shift if one exists
+        one = lenghtOneCheck();
+        if (one != 0) {
+            for (int i = shift; i < numVariables; i++) {
+                if (Math.abs(one) == (int) rankArray[0][i]) {
+                    maxValue = rankArray[0][i];
+                    maxValueKey = i;
+                    PropVarStack.push(one);
+                }
+
+            }
+        } else {
+            PropVarStack.push(0);
         }
         //Switch the maxValueKey to the shift position
         if (swapLargest) {
@@ -271,16 +325,25 @@ public class Formula {
         int var;
         int absKey;
         int varNeg = 0;
-
-        var = (int) rankArray[0][shift];
-        nextVarObj = (HashObject) hashMap.get(var);
-        hashMap.remove(var);
+        //int oneCheck = lenghtOneCheck();
+        if(PropVarStack.peek() != 0){
+            var = PropVarStack.pop();
+            nextVarObj = (HashObject) hashMap.get(Math.abs(var));
+            hashMap.remove(Math.abs(var));
+        }
+        else{
+            var = (int) rankArray[0][shift];
+            nextVarObj = (HashObject) hashMap.get(Math.abs(var));
+            hashMap.remove(Math.abs(var));
+            //PropVarStack.pop();
+        }
+//        }
         /*
          * This if and else statement determine whether
          * to branch true or false by checking if it has
          * just back tracked or not.
          */
-        if (!justBackTracked) {
+        if (!justBackTracked && var > 0 ) {
             booleanValue = true;
             varNeg = var * -1;
             ///////
@@ -316,6 +379,7 @@ public class Formula {
 
         //////
         } else {
+            var = Math.abs(var);
             booleanValue = false;
             varNeg = var;
             //////
@@ -357,12 +421,21 @@ public class Formula {
      * Back tracks up the tree.
      */
     public void backTrack() {
+        boolean propBacktrackF = false;
+        if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
+            propBacktrackF = (PropVarStack.pop() < 0);
+        }
         try {
-            while (!(Boolean) booleanStack.pop()) {
+            while (propBacktrackF || !(Boolean) booleanStack.pop()) {
                 shift--;
                 int insertKey = (int) rankArray[0][shift];//Added absolute value
                 HashObject insertObj = (HashObject) hashObjectStack.pop();
                 rePopulate2(insertKey, insertObj, false);
+                if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
+                    propBacktrackF = (PropVarStack.pop() < 0);
+                } else {
+                    propBacktrackF = false;
+                }
             }
             shift--;
             int insertKey = (int) rankArray[0][shift]; //InsertKey Will be positive REMOVE ABS!!!!!
@@ -508,6 +581,54 @@ public class Formula {
         return true;
     }
 
+    private int lenghtOneCheck() {
+        int size;
+        int var;
+        int tmp;
+        Clause tmpClause;
+        int oneClause[][];
+        Set<Integer> remKeys = hashMap.keySet();
+        oneClause = new int[numClauses] [2];
+        Iterator<Integer> keyIterator = remKeys.iterator();
+        while (keyIterator.hasNext()) {
+            var = keyIterator.next();
+            hashObj = (HashObject) hashMap.get(var);
+            if (hashObj == null) {
+            } else {
+                size = hashObj.posSize();
+                for (int j = 0; j < size; j++) {
+                    tmpClause = hashObj.getP(j);
+                    oneClause[tmpClause.ClauseNumber()][0] += 1;
+                }
+                size = hashObj.negSize();
+                for (int j = 0; j < size; j++) {
+                    tmpClause = hashObj.getN(j);
+                    oneClause[tmpClause.ClauseNumber()][1] += 1;
+                }
+            }
+        }
+        for(int i =0; i< numClauses;i++){
+            if(oneClause[i][0] == 1 && oneClause[i][1] == 0){
+                tmpClause = (Clause)clauseList[i];
+                for(int j = 0; j < tmpClause.actualSize(); j++){
+                    tmp = tmpClause.get(j);
+                    if(tmp != 0){
+                        return tmp;
+                    }
+                }
+            }
+            else if(oneClause[i][1] == 1 && oneClause[i][0] == 0){
+                tmpClause = (Clause)clauseList[i];
+                for(int j = 0; j < tmpClause.actualSize(); j++){
+                    tmp = tmpClause.get(j);
+                    if(tmp != 0){
+                        return tmp;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
     //move to seperate class?
     /**
      * Merge sort.
