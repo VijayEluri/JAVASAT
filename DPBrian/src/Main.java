@@ -15,7 +15,7 @@ public class Main {
         while (!done) {
             if (f.validSolution()) {
                 done = true;
-            } else if (f.clauseSizeZero()) {
+            } else if (f.getLastClauseSizeResult()){   //f.clauseSizeZero()) {
                 f.backTrack();
             } else {
                 f.forwardTrack();

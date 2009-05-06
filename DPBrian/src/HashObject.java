@@ -13,7 +13,7 @@ public class HashObject {
 
     ArrayList<Clause> pos;
     ArrayList<Clause> neg;
-
+    int variableNumber;
     HashObject(){
         pos = new ArrayList<Clause>();
         neg = new ArrayList<Clause>();
@@ -70,5 +70,12 @@ public class HashObject {
         String returnString = pos.toString()+" ";
         returnString += neg.toString();
         return returnString;
+    }
+
+    public void variableNumber(int variable) {
+        variableNumber = variable;
+    }
+    public int getVariableNumber(){
+        return variableNumber;
     }
 }

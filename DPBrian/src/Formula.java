@@ -7,7 +7,6 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -17,21 +16,20 @@ import java.util.Stack;
  */
 public class Formula {
 
-    private Object clauseList[];
-    private float rankArray[][];
     private Stack<Boolean> booleanStack = new Stack<Boolean>();
     private Stack<HashObject> hashObjectStack = new Stack<HashObject>();
+    private Stack<Integer> PropVarStack = new Stack<Integer>();
+    private Object clauseList[];
+    private float rankArray[][];
+    private double powArray[];
     private Scanner sc;
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
-    public int numVariables;
-    private int numClauses;
-    private int clauseLength;
+    private int numVariables,numClauses,clauseLength,key;
+    private boolean clauseSizeZeroResult;
     public int shift = 0;
-    private int key;
     private boolean justBackTracked = false;
-    private double powArray[];
-    private Stack<Integer> PropVarStack = new Stack< Integer>();
+    
     /**
      * Instantiates a new formula.
      * 
@@ -51,6 +49,8 @@ public class Formula {
      * @param fileName the file name
      */
     private void importCNF(String fileName) {
+        int clause, i, nextVar, size;
+        int tmp[];
         try {
             sc = new Scanner(new File(fileName));
         } catch (FileNotFoundException e) {
@@ -62,19 +62,16 @@ public class Formula {
         }
 
         sc.findInLine("p cnf");
-        numVariables = sc.nextInt();			// Reading in number of variables.
-
-        numClauses = sc.nextInt();				// Reading in number of clauses
-
+        numVariables = sc.nextInt();			
+        numClauses = sc.nextInt();				
         clauseList = new Object[numClauses];
         ArrayList<Integer> list = new ArrayList<Integer>();
 
         /*
          * Populate the clause list
          */
-        for (int clause = 0; sc.hasNextInt(); clause++) {
-            int nextVar = sc.nextInt();
-
+        for (clause = 0; sc.hasNextInt(); clause++) {
+            nextVar = sc.nextInt();
             while (nextVar != 0) {
                 list.add(nextVar);
                 if (nextVar == 0) {
@@ -85,42 +82,39 @@ public class Formula {
             if (clause == 0) {
                 clauseLength = list.size();
             }
-            int tmp[] = new int[list.size()];
-            for (int i = 0; i < list.size(); i++) {
+            size = list.size();
+            tmp = new int[size];
+            for (i = 0; i < size; i++) {
                 tmp[i] = list.get(i);
             }
-
-            Clause tmpClause = new Clause(tmp.length);
-            tmpClause.addArray(tmp);
-            tmpClause.setClauseNumber(clause);
+            Clause tmpClause = new Clause(list.size(), tmp );
+            //tmpClause.addArray(tmp);
+            //tmpClause.setClauseNumber(clause);
             clauseList[clause] = tmpClause;
             list.clear();
-        } // End for
-
+        }
+        sc.close();
     }
 
     /**
      * Populate the hash map.
      */
     private void populateHashMap() {
-        hashMap = new HashMap<Integer, HashObject>(numVariables);
+        hashMap = new HashMap<Integer, HashObject>(numVariables*2, (float)0.5);
         Clause clauseAtI;
-        int clauseVar;
-        int clauseVarKey;
+        int clauseVar,clauseVarKey,i,j;
         HashObject prevHashObj;
-
-        for (int i = 0; i < numClauses; i++) {
+        int clauseAtISize;
+        for (i = 0; i < numClauses; i++) {
             clauseAtI = (Clause) clauseList[i];
-            for (int j = 0; j < clauseAtI.size(); j++) {
-
+            clauseAtISize = clauseAtI.size();
+            for (j = 0; j < clauseAtISize; j++) {
                 clauseVar = clauseAtI.get(j);
-
                 clauseVarKey = Math.abs(clauseVar); //abs of variable for key
-
-                prevHashObj = (HashObject) hashMap.get(clauseVarKey); //hashobj for key clauseVar
-
+                prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
-                    HashObject hashTmp = new HashObject();  //numClauses, numVariables, clauseLength);
+                    HashObject hashTmp = new HashObject();
+                    //hashTmp.variableNumber(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
                     prevHashObj = (HashObject) hashMap.get(clauseVarKey);
                 }
@@ -133,7 +127,6 @@ public class Formula {
                 hashMap.put(clauseVarKey, prevHashObj);
             }
         }
-
     }
 
     /**
@@ -152,24 +145,19 @@ public class Formula {
      * first time.
      */
     private void rankVariables() {
-        int clength;
-        int size;
+        int clength,size;
         float sum = 0;
-
         fillPowArray();
+        int powLength = powArray.length;
 
         for (int i = 1; i <= numVariables; i++) {			// Creates List
-
-            hashObj = (HashObject) hashMap.get(i);
-            if (hashObj == null) {
-                System.out.println("Null at i of " + i);
-            } else {
+            hashObj =  hashMap.get(i);
+            if (hashObj != null) {
                 size = hashObj.posSize();
                 for (int j = 0; j < size; j++) {				// Sums the rank in the posList
-
                     Clause tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
-                    if (clength < powArray.length) {
+                    if (clength < powLength) {
                         sum += powArray[clength];
                     } else {
                         sum += Math.pow(2, (clength * -1));
@@ -179,7 +167,7 @@ public class Formula {
                 for (int j = 0; j < size; j++) {				// Sums the rank in the negList
 
                     clength = hashObj.getN(j).size();
-                    if (clength < powArray.length) {
+                    if (clength < powLength) {
                         sum += powArray[clength];
                     } else {
                         sum += Math.pow(2, (clength * -1));
@@ -199,33 +187,78 @@ public class Formula {
      * Re-rank variables.
      */
     public void reRankVariables() {
-        int clength;
-        int size;
+        Clause tmpClause;
+        int clength,size,i,j,tmpVar,currentMaxKey;
+        boolean swapLargest;
+        float currentMaxRank;
         double maxValue;
         double checkValue = 0;
         int maxValueKey = -1;
-        int currentMaxKey;
-        boolean swapLargest;
         float sum = 0;
-        float currentMaxRank;
         int one = 0;
-        Clause tmpClause;
-        //Length addition commented out
-        //Runs slower than external method
-//        int oneClause[][];
-//        oneClause = new int[numClauses][2];
-//        int tmp;
+        
+        /// Second Based on values from hashMap
 
-        for (int i = shift; i < numVariables; i++) {
+//        Collection<HashObject> remKeys = hashMap.values();
+//        Iterator<HashObject> entryIt = remKeys.iterator();
+//        while (entryIt.hasNext()) {
+//            hashObj = entryIt.next();
+//        for (i = shift; i < numVariables; i++) {
+//            hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
+//            if (hashObj != null) {
+//                size = hashObj.posSize();
+//                for (j = 0; j < size; j++) {				// Sums the rank in the posList
+//                    tmpClause = hashObj.getP(j);
+//                    clength = tmpClause.size();
+//                    if (clength < powArray.length) {
+//                        sum += powArray[clength];
+//                    } else {
+//                        sum += Math.pow(2, (clength * -1));
+//                    }
+//                    if (one == 0 && clength == 1) {
+//                        for (j = 0; j < tmpClause.actualSize(); j++) {
+//                            tmpVar = tmpClause.get(j);
+//                            if (tmpVar != 0) {
+//                                one = tmpVar;
+//                            }
+//                        }
+//                    }
+//                }
+//                size = hashObj.negSize();
+//                for (j = 0; j < size; j++) {				// Sums the rank in the negList
+//                    tmpClause = hashObj.getN(j);
+//                    clength = tmpClause.size();
+//                    if (clength < powArray.length) {
+//                        sum += powArray[clength];
+//                    } else {
+//                        sum += Math.pow(2, (clength * -1));
+//                    }
+//                    if (one == 0 && clength == 1) {
+//                        for (j = 0; j < tmpClause.actualSize(); j++) {
+//                            tmpVar = tmpClause.get(j);
+//                            if (tmpVar != 0) {
+//                                one = tmpVar;
+//                            }
+//                        }
+//                    }
+//                    rankArray[1][i] = sum; // Stores the Ranking in the second column
+//                    sum = 0;
+//                }
+//            }
+//        }
+        /// New end here
+
+
+        //// First Ranking Based on for loops thru hashMap
+        one = lengthOneCheck();
+
+        for (i = shift; one == 0 &&  i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
-            if (hashObj == null) {
-                //System.out.println("Null");
-            } else {
+            if (hashObj != null) {
                 size = hashObj.posSize();
-                for (int j = 0; j < size; j++) {				// Sums the rank in the posList
+                for (j = 0; j < size; j++) {				// Sums the rank in the posList
                     tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
-//                    oneClause[tmpClause.ClauseNumber()][0] += 1;
                     if (clength < powArray.length) {
                         sum += powArray[clength];
                     } else {
@@ -233,11 +266,9 @@ public class Formula {
                     }
                 }
                 size = hashObj.negSize();
-                for (int j = 0; j < size; j++) {				// Sums the rank in the negList
-
+                for (j = 0; j < size; j++) {				// Sums the rank in the negList
                     tmpClause = hashObj.getN(j);
                     clength = tmpClause.size();
-//                    oneClause[tmpClause.ClauseNumber()][1] += 1;
                     if (clength < powArray.length) {
                         sum += powArray[clength];
                     } else {
@@ -245,61 +276,33 @@ public class Formula {
                     }
                 }
                 rankArray[1][i] = sum;					// Stores the Ranking in the second column
-
                 sum = 0;
             }
         }
+
+        
+
         maxValue = checkValue;
         swapLargest = false;
-        for (int i = shift; i < numVariables; i++) { //Move largest var to shift
 
-            checkValue = rankArray[1][i];
-            if (maxValue < checkValue) {
-                maxValueKey = i;
-                maxValue = checkValue;
-                swapLargest = true;
-            }
-        }
-
-        //Tried to add length check into ranking made program slower
-        //boolean finished = false;
-
-//        for (int i = 0; i < numClauses && !finished; i++) {
-//            if (oneClause[i][0] == 1 && oneClause[i][1] == 0) {
-//                tmpClause = (Clause) clauseList[i];
-//                for (int j = 0; j < tmpClause.actualSize(); j++) {
-//                    tmp = tmpClause.get(j);
-//                    if (tmp != 0) {
-//                        one = tmp;
-//                        finished = true;
-//                    }
-//                }
-//            } else if (oneClause[i][1] == 1 && oneClause[i][0] == 0) {
-//                tmpClause = (Clause) clauseList[i];
-//                for (int j = 0; j < tmpClause.actualSize(); j++) {
-//                    tmp = tmpClause.get(j);
-//                    if (one != 0) {
-//                        one = tmp;
-//                        finished = true;
-//                    }
-//
-//                }
-//            }
-//        }
-
-        // Might be able to use ranking number for length one check
-        // Set unit variable as shift if one exists
-        one = lenghtOneCheck();
         if (one != 0) {
-            for (int i = shift; i < numVariables; i++) {
+            for (i = shift; i < numVariables; i++) {
                 if (Math.abs(one) == (int) rankArray[0][i]) {
                     maxValue = rankArray[0][i];
                     maxValueKey = i;
                     PropVarStack.push(one);
                 }
-
             }
+            swapLargest = true;
         } else {
+            for (i = shift; i < numVariables; i++) { //Move largest var to shift
+                checkValue = rankArray[1][i];
+                if (maxValue < checkValue) {
+                    maxValueKey = i;
+                    maxValue = checkValue;
+                    swapLargest = true;
+                }
+            }
             PropVarStack.push(0);
         }
         //Switch the maxValueKey to the shift position
@@ -322,37 +325,31 @@ public class Formula {
         Clause clause;
         HashObject nextVarObj;
         boolean booleanValue;
-        int var;
-        int absKey;
+        int var,absKey,actualSize, j, i;
         int varNeg = 0;
-        //int oneCheck = lenghtOneCheck();
-        if(PropVarStack.peek() != 0){
+        if (PropVarStack.peek() != 0) {
             var = PropVarStack.pop();
-            nextVarObj = (HashObject) hashMap.get(Math.abs(var));
+            nextVarObj =  hashMap.get(Math.abs(var));
             hashMap.remove(Math.abs(var));
-        }
-        else{
+        } else {
             var = (int) rankArray[0][shift];
-            nextVarObj = (HashObject) hashMap.get(Math.abs(var));
+            nextVarObj =  hashMap.get(Math.abs(var));
             hashMap.remove(Math.abs(var));
-            //PropVarStack.pop();
         }
-//        }
         /*
          * This if and else statement determine whether
          * to branch true or false by checking if it has
          * just back tracked or not.
          */
-        if (!justBackTracked && var > 0 ) {
+        if (!justBackTracked && var > 0) {
             booleanValue = true;
             varNeg = var * -1;
-            ///////
             int listSize = nextVarObj.posSize();
             int opsitListSize = nextVarObj.negSize();
-
-            for (int i = 0; i < listSize; i++) {
+            for (i = 0; i < listSize; i++) {
                 clause = (Clause) nextVarObj.getP(i);
-                for (int j = 0; j < clause.actualSize(); j++) {
+                actualSize = clause.actualSize();
+                for (j = 0; j < actualSize; j++) {
                     key = clause.get(j);
                     absKey = Math.abs(key);
                     if (key != 0 && absKey != var) {
@@ -368,7 +365,7 @@ public class Formula {
              * This loop removes all varNeg occurrences
              * from all clauses in clauseList.
              */
-            for (int i = 0; i < opsitListSize; i++) {
+            for (i = 0; i < opsitListSize; i++) {
                 ((Clause) nextVarObj.getN(i)).removeVar(varNeg);
             }
 
@@ -376,8 +373,6 @@ public class Formula {
             booleanStack.push(booleanValue);
             justBackTracked = false;
             shift++;
-
-        //////
         } else {
             var = Math.abs(var);
             booleanValue = false;
@@ -386,9 +381,10 @@ public class Formula {
             int listSize = nextVarObj.negSize();
             int opsitListSize = nextVarObj.posSize();
 
-            for (int i = 0; i < listSize; i++) {
+            for (i = 0; i < listSize; i++) {
                 clause = (Clause) nextVarObj.getN(i);
-                for (int j = 0; j < clause.actualSize(); j++) {
+                actualSize = clause.actualSize();
+                for (j = 0; j < actualSize; j++) {
                     key = clause.get(j);
                     absKey = Math.abs(key);
                     if (key != 0 && absKey != var) {
@@ -404,16 +400,13 @@ public class Formula {
              * This loop removes all varNeg occurrences
              * from all clauses in clauseList.
              */
-            for (int i = 0; i < opsitListSize; i++) {
-                ((Clause) nextVarObj.getP(i)).removeVar(varNeg);
+            for (i = 0; i < opsitListSize; i++) {
+                (nextVarObj.getP(i)).removeVar(varNeg);
             }
-
             hashObjectStack.push(nextVarObj);
             booleanStack.push(booleanValue);
             justBackTracked = false;
             shift++;
-
-        //////
         }
     }
 
@@ -422,14 +415,16 @@ public class Formula {
      */
     public void backTrack() {
         boolean propBacktrackF = false;
+        int insertKey;
+        HashObject insertObj;
         if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
             propBacktrackF = (PropVarStack.pop() < 0);
         }
         try {
             while (propBacktrackF || !(Boolean) booleanStack.pop()) {
                 shift--;
-                int insertKey = (int) rankArray[0][shift];//Added absolute value
-                HashObject insertObj = (HashObject) hashObjectStack.pop();
+                insertKey = (int) rankArray[0][shift];//Added absolute value
+                insertObj = (HashObject) hashObjectStack.pop();
                 rePopulate2(insertKey, insertObj, false);
                 if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
                     propBacktrackF = (PropVarStack.pop() < 0);
@@ -438,8 +433,8 @@ public class Formula {
                 }
             }
             shift--;
-            int insertKey = (int) rankArray[0][shift]; //InsertKey Will be positive REMOVE ABS!!!!!
-            HashObject insertObj = (HashObject) hashObjectStack.pop();
+            insertKey = (int) rankArray[0][shift];
+            insertObj = (HashObject) hashObjectStack.pop();
             rePopulate2(insertKey, insertObj, true);
             justBackTracked = true;
         } catch (EmptyStackException e) {
@@ -456,24 +451,16 @@ public class Formula {
      * @param varSetTo the boolean value of the object
      */
     private void rePopulate2(int key, HashObject rePopObj, boolean varSetTo) {
-//    	System.out.println("Repopulating: ...");
         Clause clause;
-        int var;
-        int negkey;
-        int rVarSize;
-        int rClauseSize;
-
+        int var,negkey,rVarSize,rClauseSize,i, j, actualSize;
         if (varSetTo) {
             negkey = key * -1;
-            /////
-
             rVarSize = rePopObj.negSize();
             rClauseSize = rePopObj.posSize();
-
-            //Return Clauses GOOOO
-            for (int i = 0; i < rClauseSize; i++) {
+            for (i = 0; i < rClauseSize; i++) {
                 clause = rePopObj.getP(i);
-                for (int j = 0; j < clause.actualSize(); j++) {
+                actualSize = clause.actualSize();
+                for (j = 0; j < actualSize; j++) {
                     var = clause.get(j);
                     if (var != 0) {
                         hashObj = hashMap.get(Math.abs(var));
@@ -482,32 +469,22 @@ public class Formula {
                         } else if (hashObj != null) {
                             hashObj.addClauseNeg(clause);
                         }
-                    }// End if(var == 0)
-
-                }// End for (j < clause.actualSize())   		
-
-            }// End for(i < rClauseSize)
-
-            //Return Negated Vars Hoooooo!
-            for (int i = 0; i < rVarSize; i++) {
+                    }
+                }
+            }
+            for (i = 0; i < rVarSize; i++) {
                 clause = rePopObj.getN(i);
                 clause.addVar(negkey);
             }
             hashMap.put(key, rePopObj);
-
-
-        /////
         } else {
             negkey = key;
-            ///////////
-
             rVarSize = rePopObj.posSize();
             rClauseSize = rePopObj.negSize();
-
-            //Return Clauses GOOOO
-            for (int i = 0; i < rClauseSize; i++) {
+            for (i = 0; i < rClauseSize; i++) {
                 clause = rePopObj.getN(i);
-                for (int j = 0; j < clause.actualSize(); j++) {
+                actualSize = clause.actualSize();
+                for (j = 0; j < actualSize; j++) {
                     var = clause.get(j);
                     if (var != 0) {
                         hashObj = hashMap.get(Math.abs(var));
@@ -516,23 +493,15 @@ public class Formula {
                         } else if (hashObj != null) {
                             hashObj.addClauseNeg(clause);
                         }
-                    }// End if(var == 0)
-
-                }// End for (j < clause.actualSize())   		
-
-            }// End for(i < rClauseSize)
-
-            //Return Negated Vars Hoooooo!
-            for (int i = 0; i < rVarSize; i++) {
+                    }
+                }		
+            }
+            for (i = 0; i < rVarSize; i++) {
                 clause = rePopObj.getP(i);
                 clause.addVar(negkey);
             }
             hashMap.put(key, rePopObj);
-
-        ///////
-
         }
-
     }
 
     /**
@@ -541,13 +510,19 @@ public class Formula {
      * @return true, if successful
      */
     public boolean clauseSizeZero() {
-
-        for (int i = 0; i < clauseList.length; i++) {
+        int length = clauseList.length;
+        for (int i = 0; i < length; i++) {
             if (((Clause) clauseList[i]).size() == 0) {
-                return true;
+                clauseSizeZeroResult = true;
+                return clauseSizeZeroResult;
             }
         }
-        return false;
+        clauseSizeZeroResult = false;
+        return clauseSizeZeroResult;
+    }
+    
+    public boolean getLastClauseSizeResult(){
+        return clauseSizeZeroResult;
     }
 
     /**
@@ -556,7 +531,7 @@ public class Formula {
      * @return true, if successful
      */
     public boolean validSolution() {
-        if ((hashMap.isEmpty() || allEmptyKeyMap()) && !clauseSizeZero()) {
+        if ( !clauseSizeZero() && (hashMap.isEmpty() || allEmptyKeyMap())) {
             return true;
         } else {
             return false;
@@ -581,55 +556,47 @@ public class Formula {
         return true;
     }
 
-    private int lenghtOneCheck() {
-        int size;
-        int var;
-        int tmp;
+    private int lengthOneCheck() {
+//        Collection<HashObject> remKeys = hashMap.values();
+//        Iterator<HashObject> keyIterator = remKeys.iterator();
+        HashObject tmp;
         Clause tmpClause;
-        int oneClause[][];
-        Set<Integer> remKeys = hashMap.keySet();
-        oneClause = new int[numClauses] [2];
-        Iterator<Integer> keyIterator = remKeys.iterator();
-        while (keyIterator.hasNext()) {
-            var = keyIterator.next();
-            hashObj = (HashObject) hashMap.get(var);
-            if (hashObj == null) {
-            } else {
-                size = hashObj.posSize();
-                for (int j = 0; j < size; j++) {
-                    tmpClause = hashObj.getP(j);
-                    oneClause[tmpClause.ClauseNumber()][0] += 1;
-                }
-                size = hashObj.negSize();
-                for (int j = 0; j < size; j++) {
-                    tmpClause = hashObj.getN(j);
-                    oneClause[tmpClause.ClauseNumber()][1] += 1;
-                }
-            }
-        }
-        for(int i =0; i< numClauses;i++){
-            if(oneClause[i][0] == 1 && oneClause[i][1] == 0){
-                tmpClause = (Clause)clauseList[i];
-                for(int j = 0; j < tmpClause.actualSize(); j++){
-                    tmp = tmpClause.get(j);
-                    if(tmp != 0){
-                        return tmp;
+        int tmpVar, size, i, j,k, actualSize;
+
+//        while (keyIterator.hasNext()) {
+//            tmp =  keyIterator.next();
+        for (k = shift; k < numVariables; k++) {
+            tmp = hashMap.get((int) rankArray[0][k]);
+            size = tmp.posSize();
+            for (i = 0; i < size; i++) {
+                tmpClause = tmp.getP(i);
+                if (tmpClause.size() == 1) {
+                    actualSize = tmpClause.actualSize();
+                    for (j = 0; j < actualSize; j++) {
+                        tmpVar = tmpClause.get(j);
+                        if (tmpVar != 0) {
+                            return tmpVar;
+                        }
                     }
                 }
             }
-            else if(oneClause[i][1] == 1 && oneClause[i][0] == 0){
-                tmpClause = (Clause)clauseList[i];
-                for(int j = 0; j < tmpClause.actualSize(); j++){
-                    tmp = tmpClause.get(j);
-                    if(tmp != 0){
-                        return tmp;
+            size = tmp.negSize();
+            for (i = 0; i < size; i++) {
+                tmpClause = tmp.getN(i);
+                if (tmpClause.size() == 1) {
+                    actualSize = tmpClause.actualSize();
+                    for (j = 0; j < actualSize; j++) {
+                        tmpVar = tmpClause.get(j);
+                        if (tmpVar != 0) {
+                            return tmpVar;
+                        }
                     }
                 }
             }
         }
         return 0;
     }
-    //move to seperate class?
+
     /**
      * Merge sort.
      */
@@ -637,7 +604,6 @@ public class Formula {
         float temp[][] = new float[2][numVariables];
         mergeSort(temp, 0 + shift, numVariables - 1);
     } // End mergeSort()
-
 
     /**
      * Merge sort.
@@ -662,7 +628,6 @@ public class Formula {
         }  // End else
 
     } // End mergSort(int[],int,int)
-
 
     /**
      * Merge.
@@ -706,6 +671,5 @@ public class Formula {
             rankArray[0][lowerBound + i] = temp[0][i];
         }
     } // End merge(int[],int,int,int)
-
 }
 
