@@ -25,7 +25,7 @@ public class Formula {
     private Scanner sc;
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
-    private int numVariables,numClauses,clauseLength,key;
+    private int numVariables,numClauses,key;
     private boolean clauseSizeZeroResult;
     public int shift = 0;
     private boolean justBackTracked = false;
@@ -65,7 +65,7 @@ public class Formula {
         numVariables = sc.nextInt();			
         numClauses = sc.nextInt();				
         clauseList = new Object[numClauses];
-        ArrayList<Integer> list = new ArrayList<Integer>();
+        ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
 
         /*
          * Populate the clause list
@@ -79,18 +79,14 @@ public class Formula {
                 }
                 nextVar = sc.nextInt();
             }
-            if (clause == 0) {
-                clauseLength = list.size();
-            }
             size = list.size();
             tmp = new int[size];
             for (i = 0; i < size; i++) {
                 tmp[i] = list.get(i);
             }
-            Clause tmpClause = new Clause(list.size(), tmp );
             //tmpClause.addArray(tmp);
             //tmpClause.setClauseNumber(clause);
-            clauseList[clause] = tmpClause;
+            clauseList[clause] = new Clause(size, tmp );
             list.clear();
         }
         sc.close();
@@ -102,6 +98,7 @@ public class Formula {
     private void populateHashMap() {
         hashMap = new HashMap<Integer, HashObject>(numVariables*2, (float)0.5);
         Clause clauseAtI;
+        HashObject hashTmp;
         int clauseVar,clauseVarKey,i,j;
         HashObject prevHashObj;
         int clauseAtISize;
@@ -113,10 +110,10 @@ public class Formula {
                 clauseVarKey = Math.abs(clauseVar); //abs of variable for key
                 prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
-                    HashObject hashTmp = new HashObject();
+                    hashTmp = new HashObject();
                     //hashTmp.variableNumber(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
-                    prevHashObj = (HashObject) hashMap.get(clauseVarKey);
+                    prevHashObj = hashTmp;//(HashObject) hashMap.get(clauseVarKey);
                 }
 
                 if (clauseVar > 0) {
@@ -124,7 +121,7 @@ public class Formula {
                 } else {
                     prevHashObj.addClauseNeg(clauseAtI);
                 }
-                hashMap.put(clauseVarKey, prevHashObj);
+                //hashMap.put(clauseVarKey, prevHashObj);
             }
         }
     }
@@ -203,7 +200,7 @@ public class Formula {
 //        Iterator<HashObject> entryIt = remKeys.iterator();
 //        while (entryIt.hasNext()) {
 //            hashObj = entryIt.next();
-//        for (i = shift; i < numVariables; i++) {
+//        for (i = shift; i < numVariables && one == 0 ; i++) {
 //            hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
 //            if (hashObj != null) {
 //                size = hashObj.posSize();
@@ -246,12 +243,12 @@ public class Formula {
 //                }
 //            }
 //        }
+
         /// New end here
 
 
         //// First Ranking Based on for loops thru hashMap
         one = lengthOneCheck();
-
         for (i = shift; one == 0 &&  i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
             if (hashObj != null) {
@@ -280,11 +277,8 @@ public class Formula {
             }
         }
 
-        
-
         maxValue = checkValue;
         swapLargest = false;
-
         if (one != 0) {
             for (i = shift; i < numVariables; i++) {
                 if (Math.abs(one) == (int) rankArray[0][i]) {
@@ -423,7 +417,7 @@ public class Formula {
         try {
             while (propBacktrackF || !(Boolean) booleanStack.pop()) {
                 shift--;
-                insertKey = (int) rankArray[0][shift];//Added absolute value
+                insertKey = (int) rankArray[0][shift];
                 insertObj = (HashObject) hashObjectStack.pop();
                 rePopulate2(insertKey, insertObj, false);
                 if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
@@ -545,26 +539,25 @@ public class Formula {
      * @return true, if successful
      */
     private boolean allEmptyKeyMap() {
-        Collection<HashObject> remKeys = hashMap.values();
-        Iterator<HashObject> keyIterator = remKeys.iterator();
-        while (keyIterator.hasNext()) {
-            HashObject tmp = (HashObject) keyIterator.next();
+        int i;
+        HashObject tmp;
+        for (i = shift; i < numVariables; i++) {
+            tmp = (HashObject) hashMap.get((int) rankArray[0][i]);
             if (!tmp.posEmpty() || !tmp.negEmpty()) {
                 return false;
             }
         }
         return true;
     }
-
+    /**
+     * Finds and returns highest ranked unit variable
+     * @return
+     */
     private int lengthOneCheck() {
-//        Collection<HashObject> remKeys = hashMap.values();
-//        Iterator<HashObject> keyIterator = remKeys.iterator();
         HashObject tmp;
         Clause tmpClause;
         int tmpVar, size, i, j,k, actualSize;
 
-//        while (keyIterator.hasNext()) {
-//            tmp =  keyIterator.next();
         for (k = shift; k < numVariables; k++) {
             tmp = hashMap.get((int) rankArray[0][k]);
             size = tmp.posSize();
