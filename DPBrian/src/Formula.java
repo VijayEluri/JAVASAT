@@ -18,7 +18,6 @@ public class Formula {
 
     private Stack<Boolean> booleanStack = new Stack<Boolean>();
     private Stack<HashObject> hashObjectStack = new Stack<HashObject>();
-    private Stack<Integer> PropVarStack = new Stack<Integer>();
     private Object clauseList[];
     private float rankArray[][];
     private double powArray[];
@@ -29,7 +28,7 @@ public class Formula {
     private boolean clauseSizeZeroResult;
     public int shift = 0;
     private boolean justBackTracked = false;
-    
+    private int one;
     /**
      * Instantiates a new formula.
      * 
@@ -37,7 +36,7 @@ public class Formula {
      */
     Formula(String fileName) {
         importCNF(fileName);
-        rankArray = new float[2][numVariables];
+        rankArray = new float[3][numVariables];
         populateHashMap();
         rankVariables();
     }
@@ -142,16 +141,16 @@ public class Formula {
      * first time.
      */
     private void rankVariables() {
-        int clength,size;
+        int clength,size,i,j;
         float sum = 0;
         fillPowArray();
         int powLength = powArray.length;
 
-        for (int i = 1; i <= numVariables; i++) {			// Creates List
+        for (i = 1; i <= numVariables; i++) {			// Creates List
             hashObj =  hashMap.get(i);
             if (hashObj != null) {
                 size = hashObj.posSize();
-                for (int j = 0; j < size; j++) {				// Sums the rank in the posList
+                for (j = 0; j < size; j++) {				// Sums the rank in the posList
                     Clause tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
                     if (clength < powLength) {
@@ -161,7 +160,7 @@ public class Formula {
                     }
                 }
                 size = hashObj.negSize();
-                for (int j = 0; j < size; j++) {				// Sums the rank in the negList
+                for (j = 0; j < size; j++) {				// Sums the rank in the negList
 
                     clength = hashObj.getN(j).size();
                     if (clength < powLength) {
@@ -185,71 +184,16 @@ public class Formula {
      */
     public void reRankVariables() {
         Clause tmpClause;
-        int clength,size,i,j,tmpVar,currentMaxKey;
+        int clength, size, i, j, k, currentMaxKey;
         boolean swapLargest;
         float currentMaxRank;
         double maxValue;
         double checkValue = 0;
         int maxValueKey = -1;
         float sum = 0;
-        int one = 0;
-        
-        /// Second Based on values from hashMap
-
-//        Collection<HashObject> remKeys = hashMap.values();
-//        Iterator<HashObject> entryIt = remKeys.iterator();
-//        while (entryIt.hasNext()) {
-//            hashObj = entryIt.next();
-//        for (i = shift; i < numVariables && one == 0 ; i++) {
-//            hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
-//            if (hashObj != null) {
-//                size = hashObj.posSize();
-//                for (j = 0; j < size; j++) {				// Sums the rank in the posList
-//                    tmpClause = hashObj.getP(j);
-//                    clength = tmpClause.size();
-//                    if (clength < powArray.length) {
-//                        sum += powArray[clength];
-//                    } else {
-//                        sum += Math.pow(2, (clength * -1));
-//                    }
-//                    if (one == 0 && clength == 1) {
-//                        for (j = 0; j < tmpClause.actualSize(); j++) {
-//                            tmpVar = tmpClause.get(j);
-//                            if (tmpVar != 0) {
-//                                one = tmpVar;
-//                            }
-//                        }
-//                    }
-//                }
-//                size = hashObj.negSize();
-//                for (j = 0; j < size; j++) {				// Sums the rank in the negList
-//                    tmpClause = hashObj.getN(j);
-//                    clength = tmpClause.size();
-//                    if (clength < powArray.length) {
-//                        sum += powArray[clength];
-//                    } else {
-//                        sum += Math.pow(2, (clength * -1));
-//                    }
-//                    if (one == 0 && clength == 1) {
-//                        for (j = 0; j < tmpClause.actualSize(); j++) {
-//                            tmpVar = tmpClause.get(j);
-//                            if (tmpVar != 0) {
-//                                one = tmpVar;
-//                            }
-//                        }
-//                    }
-//                    rankArray[1][i] = sum; // Stores the Ranking in the second column
-//                    sum = 0;
-//                }
-//            }
-//        }
-
-        /// New end here
-
-
-        //// First Ranking Based on for loops thru hashMap
+        float pos;
         one = lengthOneCheck();
-        for (i = shift; one == 0 &&  i < numVariables; i++) {
+        for (i = shift; one == 0 && i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
             if (hashObj != null) {
                 size = hashObj.posSize();
@@ -262,9 +206,10 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
+                pos = sum;
                 size = hashObj.negSize();
-                for (j = 0; j < size; j++) {				// Sums the rank in the negList
-                    tmpClause = hashObj.getN(j);
+                for (k = 0; k < size; k++) {				// Sums the rank in the negList
+                    tmpClause = hashObj.getN(k);
                     clength = tmpClause.size();
                     if (clength < powArray.length) {
                         sum += powArray[clength];
@@ -272,8 +217,15 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
+                //If Negitive not proper because missing
+                if (sum-pos > 0){//k > j) {
+                    rankArray[2][i] = 1;
+                } else {
+                    rankArray[2][i] = 0; //might not need to be explicit might default to value of 0
+                }
                 rankArray[1][i] = sum;					// Stores the Ranking in the second column
                 sum = 0;
+                pos = 0;
             }
         }
 
@@ -284,7 +236,6 @@ public class Formula {
                 if (Math.abs(one) == (int) rankArray[0][i]) {
                     maxValue = rankArray[0][i];
                     maxValueKey = i;
-                    PropVarStack.push(one);
                 }
             }
             swapLargest = true;
@@ -297,7 +248,6 @@ public class Formula {
                     swapLargest = true;
                 }
             }
-            PropVarStack.push(0);
         }
         //Switch the maxValueKey to the shift position
         if (swapLargest) {
@@ -321,8 +271,8 @@ public class Formula {
         boolean booleanValue;
         int var,absKey,actualSize, j, i;
         int varNeg = 0;
-        if (PropVarStack.peek() != 0) {
-            var = PropVarStack.pop();
+        if (one != 0) {
+            var = one;
             nextVarObj =  hashMap.get(Math.abs(var));
             hashMap.remove(Math.abs(var));
         } else {
@@ -408,23 +358,14 @@ public class Formula {
      * Back tracks up the tree.
      */
     public void backTrack() {
-        boolean propBacktrackF = false;
         int insertKey;
         HashObject insertObj;
-        if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
-            propBacktrackF = (PropVarStack.pop() < 0);
-        }
         try {
-            while (propBacktrackF || !(Boolean) booleanStack.pop()) {
+            while (!(Boolean) booleanStack.pop()) {
                 shift--;
                 insertKey = (int) rankArray[0][shift];
                 insertObj = (HashObject) hashObjectStack.pop();
                 rePopulate2(insertKey, insertObj, false);
-                if (!PropVarStack.isEmpty() && PropVarStack.peek() != 0) {
-                    propBacktrackF = (PropVarStack.pop() < 0);
-                } else {
-                    propBacktrackF = false;
-                }
             }
             shift--;
             insertKey = (int) rankArray[0][shift];
