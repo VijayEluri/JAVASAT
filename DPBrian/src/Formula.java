@@ -2,10 +2,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EmptyStackException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -184,14 +182,14 @@ public class Formula {
      */
     public void reRankVariables() {
         Clause tmpClause;
-        int clength, size, i, j, k, currentMaxKey;
+        int clength, size, i, j, k, currentMaxKey,currentSmart,absOne;
         boolean swapLargest;
         float currentMaxRank;
         double maxValue;
         double checkValue = 0;
         int maxValueKey = -1;
         float sum = 0;
-        float pos;
+//        float pos;
         one = lengthOneCheck();
         for (i = shift; one == 0 && i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
@@ -206,7 +204,7 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-                pos = sum;
+//                pos = sum;
                 size = hashObj.negSize();
                 for (k = 0; k < size; k++) {				// Sums the rank in the negList
                     tmpClause = hashObj.getN(k);
@@ -217,24 +215,29 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-                //If Negitive not proper because missing
-                if (sum-pos > 0){//k > j) {
-                    rankArray[2][i] = 1;
-                } else {
-                    rankArray[2][i] = 0; //might not need to be explicit might default to value of 0
-                }
+                // If Negitive larger rankArray[2][i] = 1 else 0
+//                if (sum-pos > 0){//k > j) {
+//                    rankArray[2][i] = 1;
+//                } else {
+//                    rankArray[2][i] = 0; //might not need to be explicit might default to value of 0
+//                }
                 rankArray[1][i] = sum;					// Stores the Ranking in the second column
                 sum = 0;
-                pos = 0;
+//                pos = 0;
             }
         }
 
         maxValue = checkValue;
         swapLargest = false;
         if (one != 0) {
+            absOne = Math.abs(one);
             for (i = shift; i < numVariables; i++) {
-                if (Math.abs(one) == (int) rankArray[0][i]) {
+                if (absOne == (int) rankArray[0][i]) {
                     maxValue = rankArray[0][i];
+//                    if(one < 0)
+//                        rankArray[2][i] = 1;
+//                    else
+//                        rankArray[2][i] = 0;
                     maxValueKey = i;
                 }
             }
@@ -253,11 +256,14 @@ public class Formula {
         if (swapLargest) {
             currentMaxKey = (int) rankArray[0][shift];
             currentMaxRank = rankArray[1][shift];
+            currentSmart = (int) rankArray[2][shift];
             rankArray[0][shift] = rankArray[0][maxValueKey];
             rankArray[1][shift] = rankArray[1][maxValueKey];
+            //rankArray[2][shift] = rankArray[2][maxValueKey];
 
             rankArray[0][maxValueKey] = currentMaxKey;
             rankArray[1][maxValueKey] = currentMaxRank;
+            //rankArray[2][maxValueKey] = currentSmart;
         }
     }
 
@@ -269,16 +275,21 @@ public class Formula {
         Clause clause;
         HashObject nextVarObj;
         boolean booleanValue;
-        int var,absKey,actualSize, j, i;
+        int var, absKey, actualSize, j, i;
         int varNeg = 0;
         if (one != 0) {
-            var = one;
-            nextVarObj =  hashMap.get(Math.abs(var));
-            hashMap.remove(Math.abs(var));
+            var = one;//Math.abs(one);      //TESTING
+            absKey = Math.abs(var);
+            nextVarObj =  hashMap.get(absKey);
+            hashMap.remove(absKey);
+//            if((int) rankArray[2][shift] == 1){
+//                var = var * -1;
+//            }
         } else {
             var = (int) rankArray[0][shift];
-            nextVarObj =  hashMap.get(Math.abs(var));
-            hashMap.remove(Math.abs(var));
+            absKey = Math.abs(var);
+            nextVarObj =  hashMap.get(absKey);
+            hashMap.remove(absKey);
         }
         /*
          * This if and else statement determine whether
@@ -364,12 +375,12 @@ public class Formula {
             while (!(Boolean) booleanStack.pop()) {
                 shift--;
                 insertKey = (int) rankArray[0][shift];
-                insertObj = (HashObject) hashObjectStack.pop();
+                insertObj = hashObjectStack.pop();
                 rePopulate2(insertKey, insertObj, false);
             }
             shift--;
             insertKey = (int) rankArray[0][shift];
-            insertObj = (HashObject) hashObjectStack.pop();
+            insertObj =  hashObjectStack.pop();
             rePopulate2(insertKey, insertObj, true);
             justBackTracked = true;
         } catch (EmptyStackException e) {
@@ -483,7 +494,7 @@ public class Formula {
         int i;
         HashObject tmp;
         for (i = shift; i < numVariables; i++) {
-            tmp = (HashObject) hashMap.get((int) rankArray[0][i]);
+            tmp = hashMap.get((int) rankArray[0][i]);
             if (!tmp.posEmpty() || !tmp.negEmpty()) {
                 return false;
             }
