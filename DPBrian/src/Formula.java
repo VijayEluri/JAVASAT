@@ -495,7 +495,7 @@ public class Formula {
         HashObject tmp;
         for (i = shift; i < numVariables; i++) {
             tmp = hashMap.get((int) rankArray[0][i]);
-            if (tmp != null &&!(tmp.posEmpty() || !tmp.negEmpty())) {
+            if (tmp != null && (!tmp.posEmpty() || !tmp.negEmpty())) {
                 return false;
             }
         }
