@@ -495,7 +495,7 @@ public class Formula {
         HashObject tmp;
         for (i = shift; i < numVariables; i++) {
             tmp = hashMap.get((int) rankArray[0][i]);
-            if (!tmp.posEmpty() || !tmp.negEmpty()) {
+            if (tmp != null &&!(tmp.posEmpty() || !tmp.negEmpty())) {
                 return false;
             }
         }
@@ -508,32 +508,34 @@ public class Formula {
     private int lengthOneCheck() {
         HashObject tmp;
         Clause tmpClause;
-        int tmpVar, size, i, j,k, actualSize;
+        int tmpVar, size, i, j, k, actualSize;
 
         for (k = shift; k < numVariables; k++) {
             tmp = hashMap.get((int) rankArray[0][k]);
-            size = tmp.posSize();
-            for (i = 0; i < size; i++) {
-                tmpClause = tmp.getP(i);
-                if (tmpClause.size() == 1) {
-                    actualSize = tmpClause.actualSize();
-                    for (j = 0; j < actualSize; j++) {
-                        tmpVar = tmpClause.get(j);
-                        if (tmpVar != 0) {
-                            return tmpVar;
+            if (tmp != null) {
+                size = tmp.posSize();
+                for (i = 0; i < size; i++) {
+                    tmpClause = tmp.getP(i);
+                    if (tmpClause.size() == 1) {
+                        actualSize = tmpClause.actualSize();
+                        for (j = 0; j < actualSize; j++) {
+                            tmpVar = tmpClause.get(j);
+                            if (tmpVar != 0) {
+                                return tmpVar;
+                            }
                         }
                     }
                 }
-            }
-            size = tmp.negSize();
-            for (i = 0; i < size; i++) {
-                tmpClause = tmp.getN(i);
-                if (tmpClause.size() == 1) {
-                    actualSize = tmpClause.actualSize();
-                    for (j = 0; j < actualSize; j++) {
-                        tmpVar = tmpClause.get(j);
-                        if (tmpVar != 0) {
-                            return tmpVar;
+                size = tmp.negSize();
+                for (i = 0; i < size; i++) {
+                    tmpClause = tmp.getN(i);
+                    if (tmpClause.size() == 1) {
+                        actualSize = tmpClause.actualSize();
+                        for (j = 0; j < actualSize; j++) {
+                            tmpVar = tmpClause.get(j);
+                            if (tmpVar != 0) {
+                                return tmpVar;
+                            }
                         }
                     }
                 }
