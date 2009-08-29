@@ -1,32 +1,32 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.HashMap;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
+import java.util.EmptyStackException;
 
 /**
  * The Class Formula.
  * 
- * @author Trevor Stevens & Brian Schreiber
+ * @author Trevor Stevens
+ * @author Brian Schreiber
  */
 public class Formula {
 
-    private Stack<Boolean> booleanStack = new Stack<Boolean>();
-    private Stack<HashObject> hashObjectStack = new Stack<HashObject>();
-    private Object clauseList[];
+    private Scanner sc;
+    private Stack<Boolean> booleanStack;
+    private Stack<HashObject> hashObjectStack;
     private float rankArray[][];
     private double powArray[];
-    private Scanner sc;
+    private Object clauseList[];
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
-    private int numVariables,numClauses,key;
+    private int numVariables,numClauses,key,one;
+    private int shift = 0;
     private boolean clauseSizeZeroResult;
-    public int shift = 0;
     private boolean justBackTracked = false;
-    private int one;
     /**
      * Instantiates a new formula.
      * 
@@ -35,6 +35,8 @@ public class Formula {
     Formula(String fileName) {
         importCNF(fileName);
         rankArray = new float[3][numVariables];
+        booleanStack = new Stack<Boolean>();
+        hashObjectStack = new Stack<HashObject>();
         populateHashMap();
         rankVariables();
     }
@@ -81,8 +83,6 @@ public class Formula {
             for (i = 0; i < size; i++) {
                 tmp[i] = list.get(i);
             }
-            //tmpClause.addArray(tmp);
-            //tmpClause.setClauseNumber(clause);
             clauseList[clause] = new Clause(size, tmp );
             list.clear();
         }
@@ -108,17 +108,14 @@ public class Formula {
                 prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
                     hashTmp = new HashObject();
-                    //hashTmp.variableNumber(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
-                    prevHashObj = hashTmp;//(HashObject) hashMap.get(clauseVarKey);
+                    prevHashObj = hashTmp;
                 }
-
                 if (clauseVar > 0) {
                     prevHashObj.addClausePos(clauseAtI);
                 } else {
                     prevHashObj.addClauseNeg(clauseAtI);
                 }
-                //hashMap.put(clauseVarKey, prevHashObj);
             }
         }
     }
@@ -172,7 +169,7 @@ public class Formula {
                 sum = 0;
             }
 
-        } // end for loop
+        }
 
         mergeSort();
     }
@@ -182,14 +179,14 @@ public class Formula {
      */
     public void reRankVariables() {
         Clause tmpClause;
-        int clength, size, i, j, k, currentMaxKey,currentSmart,absOne;
         boolean swapLargest;
+        int clength, size, i, j, k, currentMaxKey,currentSmart,absOne;
+        int maxValueKey = -1;
         float currentMaxRank;
+        float sum = 0;
         double maxValue;
         double checkValue = 0;
-        int maxValueKey = -1;
-        float sum = 0;
-//        float pos;
+
         one = lengthOneCheck();
         for (i = shift; one == 0 && i < numVariables; i++) {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
@@ -204,7 +201,6 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-//                pos = sum;
                 size = hashObj.negSize();
                 for (k = 0; k < size; k++) {				// Sums the rank in the negList
                     tmpClause = hashObj.getN(k);
@@ -215,15 +211,8 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-                // If Negitive larger rankArray[2][i] = 1 else 0
-//                if (sum-pos > 0){//k > j) {
-//                    rankArray[2][i] = 1;
-//                } else {
-//                    rankArray[2][i] = 0; //might not need to be explicit might default to value of 0
-//                }
                 rankArray[1][i] = sum;					// Stores the Ranking in the second column
                 sum = 0;
-//                pos = 0;
             }
         }
 
@@ -234,10 +223,6 @@ public class Formula {
             for (i = shift; i < numVariables; i++) {
                 if (absOne == (int) rankArray[0][i]) {
                     maxValue = rankArray[0][i];
-//                    if(one < 0)
-//                        rankArray[2][i] = 1;
-//                    else
-//                        rankArray[2][i] = 0;
                     maxValueKey = i;
                 }
             }
@@ -259,11 +244,9 @@ public class Formula {
             currentSmart = (int) rankArray[2][shift];
             rankArray[0][shift] = rankArray[0][maxValueKey];
             rankArray[1][shift] = rankArray[1][maxValueKey];
-            //rankArray[2][shift] = rankArray[2][maxValueKey];
 
             rankArray[0][maxValueKey] = currentMaxKey;
             rankArray[1][maxValueKey] = currentMaxRank;
-            //rankArray[2][maxValueKey] = currentSmart;
         }
     }
 
@@ -278,13 +261,10 @@ public class Formula {
         int var, absKey, actualSize, j, i;
         int varNeg = 0;
         if (one != 0) {
-            var = one;//Math.abs(one);      //TESTING
+            var = one;
             absKey = Math.abs(var);
             nextVarObj =  hashMap.get(absKey);
             hashMap.remove(absKey);
-//            if((int) rankArray[2][shift] == 1){
-//                var = var * -1;
-//            }
         } else {
             var = (int) rankArray[0][shift];
             absKey = Math.abs(var);
@@ -332,7 +312,6 @@ public class Formula {
             var = Math.abs(var);
             booleanValue = false;
             varNeg = var;
-            //////
             int listSize = nextVarObj.negSize();
             int opsitListSize = nextVarObj.posSize();
 
@@ -369,6 +348,8 @@ public class Formula {
      * Back tracks up the tree.
      */
     public void backTrack() {
+        //  Change functionality to avoid try catch block
+        //  Reduce runtime overhead && clean up code
         int insertKey;
         HashObject insertObj;
         try {
@@ -376,15 +357,15 @@ public class Formula {
                 shift--;
                 insertKey = (int) rankArray[0][shift];
                 insertObj = hashObjectStack.pop();
-                rePopulate2(insertKey, insertObj, false);
+                rePopulate(insertKey, insertObj, false);
             }
             shift--;
             insertKey = (int) rankArray[0][shift];
             insertObj =  hashObjectStack.pop();
-            rePopulate2(insertKey, insertObj, true);
+            rePopulate(insertKey, insertObj, true);
             justBackTracked = true;
         } catch (EmptyStackException e) {
-            System.out.print("Un");		//Concatenates with solvable solution in main mwahahahaahhaa
+            System.out.print("Un");		//Concatenates with solvable solution in main.
             Main.done = true;
         }
     }
@@ -396,7 +377,7 @@ public class Formula {
      * @param rePopObj the object being repopulated
      * @param varSetTo the boolean value of the object
      */
-    private void rePopulate2(int key, HashObject rePopObj, boolean varSetTo) {
+    private void rePopulate(int key, HashObject rePopObj, boolean varSetTo) {
         Clause clause;
         int var,negkey,rVarSize,rClauseSize,i, j, actualSize;
         if (varSetTo) {
@@ -466,7 +447,13 @@ public class Formula {
         clauseSizeZeroResult = false;
         return clauseSizeZeroResult;
     }
-    
+
+    /**
+     * Returns result of last method call to clauseSizeZero
+     * @return clauseSizeZero last result
+     * @see clauseSizeZero()
+     */
+
     public boolean getLastClauseSizeResult(){
         return clauseSizeZeroResult;
     }
@@ -550,7 +537,7 @@ public class Formula {
     private void mergeSort() {
         float temp[][] = new float[2][numVariables];
         mergeSort(temp, 0 + shift, numVariables - 1);
-    } // End mergeSort()
+    }
 
     /**
      * Merge sort.
@@ -562,7 +549,6 @@ public class Formula {
     private void mergeSort(float temp[][], int lowerBound, int upperBound) {
         if (lowerBound == upperBound) {
             return;										// If index == 1 do nothing
-
         } else {
             int mid = (lowerBound + upperBound) / 2;		// Get midpoint
 
@@ -572,9 +558,8 @@ public class Formula {
 
             merge(temp, lowerBound, mid + 1, upperBound);	// Merge both Halves
 
-        }  // End else
-
-    } // End mergSort(int[],int,int)
+        }
+    }
 
     /**
      * Merge.
@@ -617,6 +602,6 @@ public class Formula {
             rankArray[1][lowerBound + i] = temp[1][i];
             rankArray[0][lowerBound + i] = temp[0][i];
         }
-    } // End merge(int[],int,int,int)
+    }
 }
 

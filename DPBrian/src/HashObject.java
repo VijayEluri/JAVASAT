@@ -7,12 +7,13 @@ import java.util.ArrayList;
 
 /**
  *
- * @author trevorstevens
+ * @author Trevor Stevems
  */
 public class HashObject {
 
     ArrayList<Clause> pos;
     ArrayList<Clause> neg;
+    //Remove?
     int variableNumber;
     HashObject(){
         pos = new ArrayList<Clause>();
@@ -30,7 +31,6 @@ public class HashObject {
 
     public void addClauseNeg(Clause clause) {
         neg.add(clause);
-
     }
 
     public Clause getP(int k) {
@@ -56,7 +56,8 @@ public class HashObject {
     boolean negEmpty() {
         return neg.size() == 0;
     }
-
+    //  Factor out these methods duplicate function above.
+    //  Refactor code to use other methods.
     public void createAddPos(Clause clause) {
         pos.add(clause);
     }
@@ -71,6 +72,7 @@ public class HashObject {
         returnString += neg.toString();
         return returnString;
     }
+    //Remove?
 
     public void variableNumber(int variable) {
         variableNumber = variable;
