@@ -2,6 +2,8 @@
  * Main Class for Davis-Putnam Solver
  * @author Trevor Stevens
  */
+import java.util.EmptyStackException;
+
 public class Main {
 
     public static boolean done = false;
@@ -12,18 +14,24 @@ public class Main {
     
     public static void main(String[] args) {
         Formula f = new Formula(args[0]);
-        while (!done) {
-            if (f.validSolution()) {
-                done = true;
-            } else if (f.getLastClauseSizeResult()){
-                f.backTrack();
-            } else {
-                f.forwardTrack();
-            }
+        try{
+          while (!done) {
+              if (f.validSolution()) {
+                  done = true;
+              } else if (f.getLastClauseSizeResult()){
+                  f.backTrack();
+              } else {
+                  f.forwardTrack();
+              }
+          }
+        } catch (EmptyStackException e) {
+                // Empty Stack print No Solution & Exit
+                System.out.println("Unsolvable Solution");
+                System.exit(0);
         }
-        System.out.println("solvable Solution");
-        //Add method of displaying solved puzzle.
-        // Do not run if no solution.
+        
+        // Add method of displaying solved puzzle.
+        System.out.println("Solvable Solution");
         System.exit(0);
     }
 }

@@ -347,27 +347,21 @@ public class Formula {
     /**
      * Back tracks up the tree.
      */
-    public void backTrack() {
-        //  Change functionality to avoid try catch block
+    public void backTrack() throws EmptyStackException {
         //  Reduce runtime overhead && clean up code
         int insertKey;
         HashObject insertObj;
-        try {
-            while (!(Boolean) booleanStack.pop()) {
-                shift--;
-                insertKey = (int) rankArray[0][shift];
-                insertObj = hashObjectStack.pop();
-                rePopulate(insertKey, insertObj, false);
-            }
-            shift--;
-            insertKey = (int) rankArray[0][shift];
-            insertObj =  hashObjectStack.pop();
-            rePopulate(insertKey, insertObj, true);
-            justBackTracked = true;
-        } catch (EmptyStackException e) {
-            System.out.print("Un");		//Concatenates with solvable solution in main.
-            Main.done = true;
+        while (!(Boolean) booleanStack.pop()) {
+              shift--;
+              insertKey = (int) rankArray[0][shift];
+              insertObj = hashObjectStack.pop();
+              rePopulate(insertKey, insertObj, false);
         }
+        shift--;
+        insertKey = (int) rankArray[0][shift];
+        insertObj =  hashObjectStack.pop();
+        rePopulate(insertKey, insertObj, true);
+        justBackTracked = true;
     }
 
     /**
