@@ -125,8 +125,8 @@ public class Formula {
      * 2^n powers.
      */
     private void fillPowArray() {
-        powArray = new double[15];
-        for (int i = 0; i < 15; i++) {
+        powArray = new double[30];
+        for (int i = 0; i < 30; i++) {
             powArray[i] = Math.pow(2, i * -1);
         }
     }
