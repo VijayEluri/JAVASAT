@@ -30,8 +30,8 @@ public class Main {
                 System.exit(0);
         }
         
-        // Add method of displaying solved puzzle.
         System.out.println("Solvable Solution");
+        f.printSolution();
         System.exit(0);
     }
 }

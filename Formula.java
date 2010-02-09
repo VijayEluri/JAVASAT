@@ -107,6 +107,7 @@ public class Formula {
                 prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
                     hashTmp = new HashObject();
+                    hashTmp.variableNumber(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
                     prevHashObj = hashTmp;
                 }
@@ -595,6 +596,20 @@ public class Formula {
             rankArray[1][lowerBound + i] = temp[1][i];
             rankArray[0][lowerBound + i] = temp[0][i];
         }
+    }
+    
+    /**
+     * Print Solution Set.
+     */
+    public void printSolution(){
+      while(!hashObjectStack.isEmpty()){
+        if (booleanStack.pop()) {
+          System.out.print(hashObjectStack.pop().getVariableNumber()+" ");
+        } else {
+          // If false negate variable
+          System.out.print(hashObjectStack.pop().getVariableNumber()*-1+" ");
+        }
+      }
     }
 }
 
