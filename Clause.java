@@ -24,7 +24,7 @@ public class Clause {
     }
 
     public int actualSize(){
-    	return length;
+      return length;
     }
 
     public void removeVar(int var){

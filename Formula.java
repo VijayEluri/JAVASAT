@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -61,8 +60,8 @@ public class Formula {
         }
 
         sc.findInLine("p cnf");
-        numVariables = sc.nextInt();			
-        numClauses = sc.nextInt();				
+        numVariables = sc.nextInt();
+        numClauses = sc.nextInt();
         clauseList = new Object[numClauses];
         ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
 
@@ -141,11 +140,11 @@ public class Formula {
         fillPowArray();
         int powLength = powArray.length;
 
-        for (i = 1; i <= numVariables; i++) {			// Creates List
+        for (i = 1; i <= numVariables; i++) {     // Creates List
             hashObj =  hashMap.get(i);
             if (hashObj != null) {
                 size = hashObj.posSize();
-                for (j = 0; j < size; j++) {				// Sums the rank in the posList
+                for (j = 0; j < size; j++) {        // Sums the rank in the posList
                     Clause tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
                     if (clength < powLength) {
@@ -155,7 +154,7 @@ public class Formula {
                     }
                 }
                 size = hashObj.negSize();
-                for (j = 0; j < size; j++) {				// Sums the rank in the negList
+                for (j = 0; j < size; j++) {        // Sums the rank in the negList
 
                     clength = hashObj.getN(j).size();
                     if (clength < powLength) {
@@ -164,8 +163,8 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-                rankArray[0][i - 1] = i;						// Stores the Variable in the first column
-                rankArray[1][i - 1] = sum;					// Stores the Ranking in the second column
+                rankArray[0][i - 1] = i;            // Stores the Variable in the first column
+                rankArray[1][i - 1] = sum;          // Stores the Ranking in the second column
                 sum = 0;
             }
 
@@ -180,7 +179,7 @@ public class Formula {
     public void reRankVariables() {
         Clause tmpClause;
         boolean swapLargest;
-        int clength, size, i, j, k, currentMaxKey,currentSmart,absOne;
+        int clength, size, i, j, k, currentMaxKey, currentSmart, absOne;
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
@@ -192,7 +191,7 @@ public class Formula {
             hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
             if (hashObj != null) {
                 size = hashObj.posSize();
-                for (j = 0; j < size; j++) {				// Sums the rank in the posList
+                for (j = 0; j < size; j++) {        // Sums the rank in the posList
                     tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
                     if (clength < powArray.length) {
@@ -202,7 +201,7 @@ public class Formula {
                     }
                 }
                 size = hashObj.negSize();
-                for (k = 0; k < size; k++) {				// Sums the rank in the negList
+                for (k = 0; k < size; k++) {        // Sums the rank in the negList
                     tmpClause = hashObj.getN(k);
                     clength = tmpClause.size();
                     if (clength < powArray.length) {
@@ -211,7 +210,7 @@ public class Formula {
                         sum += Math.pow(2, (clength * -1));
                     }
                 }
-                rankArray[1][i] = sum;					// Stores the Ranking in the second column
+                rankArray[1][i] = sum;          // Stores the Ranking in the second column
                 sum = 0;
             }
         }
@@ -373,7 +372,7 @@ public class Formula {
      */
     private void rePopulate(int key, HashObject rePopObj, boolean varSetTo) {
         Clause clause;
-        int var,negkey,rVarSize,rClauseSize,i, j, actualSize;
+        int var, negkey, rVarSize, rClauseSize, i, j, actualSize;
         if (varSetTo) {
             negkey = key * -1;
             rVarSize = rePopObj.negSize();
@@ -415,7 +414,7 @@ public class Formula {
                             hashObj.addClauseNeg(clause);
                         }
                     }
-                }		
+                }   
             }
             for (i = 0; i < rVarSize; i++) {
                 clause = rePopObj.getP(i);
@@ -542,15 +541,15 @@ public class Formula {
      */
     private void mergeSort(float temp[][], int lowerBound, int upperBound) {
         if (lowerBound == upperBound) {
-            return;										// If index == 1 do nothing
+            return;                   // If index == 1 do nothing
         } else {
-            int mid = (lowerBound + upperBound) / 2;		// Get midpoint
+            int mid = (lowerBound + upperBound) / 2;    // Get midpoint
 
-            mergeSort(temp, lowerBound, mid);			// Lower Half
+            mergeSort(temp, lowerBound, mid);     // Lower Half
 
-            mergeSort(temp, mid + 1, upperBound);			// Upper Half
+            mergeSort(temp, mid + 1, upperBound);     // Upper Half
 
-            merge(temp, lowerBound, mid + 1, upperBound);	// Merge both Halves
+            merge(temp, lowerBound, mid + 1, upperBound); // Merge both Halves
 
         }
     }
@@ -564,13 +563,13 @@ public class Formula {
      * @param upperBound the upper bound
      */
     private void merge(float temp[][], int lower, int highMid, int upperBound) {
-        int i = 0;							// temp index
+        int i = 0;              // temp index
 
-        int lowerBound = lower;				// saves lower value
+        int lowerBound = lower;       // saves lower value
 
-        int lowMid = highMid - 1;				// sets the lower mid point
+        int lowMid = highMid - 1;       // sets the lower mid point
 
-        int n = upperBound - lowerBound + 1;	// number of ints in range
+        int n = upperBound - lowerBound + 1;  // number of ints in range
 
         while (lower <= lowMid && highMid <= upperBound) {
             if (rankArray[1][lower] > rankArray[1][highMid]) {
