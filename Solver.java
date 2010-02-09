@@ -4,7 +4,7 @@
  */
 import java.util.EmptyStackException;
 
-public class Main {
+public class Solver {
 
     public static boolean done = false;
 
