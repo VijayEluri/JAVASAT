@@ -186,6 +186,7 @@ public class Formula {
         float sum = 0;
         double maxValue;
         double checkValue = 0;
+        int powLength = powArray.length;
 
         one = lengthOneCheck();
         for (i = shift; one == 0 && i < numVariables; i++) {
@@ -195,7 +196,7 @@ public class Formula {
                 for (j = 0; j < size; j++) {        // Sums the rank in the posList
                     tmpClause = hashObj.getP(j);
                     clength = tmpClause.size();
-                    if (clength < powArray.length) {
+                    if (clength < powLength) {
                         sum += powArray[clength];
                     } else {
                         sum += Math.pow(2, (clength * -1));
@@ -205,7 +206,7 @@ public class Formula {
                 for (k = 0; k < size; k++) {        // Sums the rank in the negList
                     tmpClause = hashObj.getN(k);
                     clength = tmpClause.size();
-                    if (clength < powArray.length) {
+                    if (clength < powLength) {
                         sum += powArray[clength];
                     } else {
                         sum += Math.pow(2, (clength * -1));
