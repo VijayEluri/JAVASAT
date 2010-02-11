@@ -33,7 +33,7 @@ public class Formula {
      */
     Formula(String fileName) {
         importCNF(fileName);
-        rankArray = new float[3][numVariables];
+        rankArray = new float[2][numVariables];
         booleanStack = new Stack<Boolean>();
         hashObjectStack = new Stack<HashObject>();
         populateHashMap();
@@ -241,7 +241,6 @@ public class Formula {
         if (swapLargest) {
             currentMaxKey = (int) rankArray[0][shift];
             currentMaxRank = rankArray[1][shift];
-            currentSmart = (int) rankArray[2][shift];
             rankArray[0][shift] = rankArray[0][maxValueKey];
             rankArray[1][shift] = rankArray[1][maxValueKey];
 
