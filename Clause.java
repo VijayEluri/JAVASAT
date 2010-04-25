@@ -13,35 +13,35 @@ public class Clause {
     private int variables[];
     private int size,length,i,found;
 
-    public Clause(int size, int a[]){
+    public Clause(int size, int a[]) {
         variables = a;
         length = size;
         this.size = size;
     }
 
-    public int size(){
+    public int size() {
         return size;
     }
 
-    public int actualSize(){
-      return length;
+    public int actualSize() {
+        return length;
     }
 
-    public void removeVar(int var){
+    public void removeVar(int var) {
         //remove and place a 0 in place of the variable in the array to hold position
         //also update clause size with the update size of the array
-        for(i=0; i<length; i++){
-            if(variables[i] == var){
+        for (i=0; i<length; i++) {
+            if (variables[i] == var) {
                 variables[i] = 0;
                 size--;
             }
         }
     }
 
-    public void addVar(int var){
+    public void addVar(int var) {
         boolean notSet = true;
-        for(i=0; i<length && notSet;i++){
-            if(variables[i] == 0){
+        for (i=0; i<length && notSet; i++) {
+            if (variables[i] == 0) {
                 variables[i] = var;
                 notSet = false;
                 size++;
@@ -49,24 +49,18 @@ public class Clause {
         }
     }
 
-    public int get(int index){
+    public int get(int index) {
         //*ensure index is formated for array*
         return variables[index];
     }
 
-    public int lengthOne(){
-        //return (size == 1) ? findOne() : 0;
-        if(size == 1){
-            return findOne();
-        } else {
-            return 0;
-        }
+    public int lengthOne() {
+        return (size == 1) ? findOne() : 0;
     }
 
-    private int findOne(){
-        for(i =0; i<length;i++){
-            //found = variables[i] != 0 ? variables[i] : ;
-            if(variables[i] != 0){
+    private int findOne() {
+        for(i = 0; i<length ; i++) {
+            if(variables[i] != 0) {
                 return variables[i];
             }
         }
@@ -74,9 +68,9 @@ public class Clause {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String returnString = "";
-        for(i = 0; i< variables.length; i++){
+        for (i = 0; i< variables.length; i++) {
             returnString += variables[i] + " ";
         }
         return returnString;

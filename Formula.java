@@ -8,7 +8,7 @@ import java.util.EmptyStackException;
 
 /**
  * The Class Formula.
- * 
+ *
  * @author Trevor Stevens
  * @author Brian Schreiber
  */
@@ -28,7 +28,7 @@ public class Formula {
     private boolean justBackTracked = false;
     /**
      * Instantiates a new formula.
-     * 
+     *
      * @param fileName the file name
      */
     Formula(String fileName) {
@@ -43,7 +43,7 @@ public class Formula {
     /**
      * Import cnf file and store clauses in
      * clauseList.
-     * 
+     *
      * @param fileName the file name
      */
     private void importCNF(String fileName) {
@@ -52,7 +52,8 @@ public class Formula {
         try {
             sc = new Scanner(new File(fileName));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.exit(1);
         }
 
         while (sc.findInLine("p cnf") == null) {
@@ -92,7 +93,7 @@ public class Formula {
      * Populate the hash map.
      */
     private void populateHashMap() {
-        hashMap = new HashMap<Integer, HashObject>(numVariables*2, (float)0.5);
+        hashMap = new HashMap<Integer, HashObject>(numVariables*2);//, (float)0.5);
         Clause clauseAtI;
         HashObject hashTmp;
         int clauseVar,clauseVarKey,i,j;
@@ -187,14 +188,14 @@ public class Formula {
         double maxValue;
         double checkValue = 0;
         int powLength = powArray.length;
-        
+
         one = lengthOneCheck();
         int pSize, nSize, bigger, s;
         if (one == 0) {
             for (i = shift; i < numVariables; i++) {
-                hashObj = ((HashObject) hashMap.get((int) rankArray[0][i]));
+                hashObj = (hashMap.get((int) rankArray[0][i]));
                 if (hashObj == null) {
-                    //rankArray[1][i] = 0;
+                    //rankArray[1][i] = 0; //not sure if good/bad
                     continue;
                 }
                 pSize = hashObj.posSize();
@@ -221,10 +222,10 @@ public class Formula {
                         }
                     }
                 }
-        rankArray[1][i] = sum;          // Stores the Ranking in the second column
-        sum = 0;
-    }
-}
+                rankArray[1][i] = sum;          // Stores the Ranking in the second column
+                sum = 0;
+            }
+        }
 
         maxValue = checkValue;
         swapLargest = false;
@@ -291,13 +292,13 @@ public class Formula {
             int listSize = nextVarObj.posSize();
             int opsitListSize = nextVarObj.negSize();
             for (i = 0; i < listSize; i++) {
-                clause = (Clause) nextVarObj.getP(i);
+                clause = nextVarObj.getP(i);
                 actualSize = clause.actualSize();
                 for (j = 0; j < actualSize; j++) {
                     key = clause.get(j);
                     absKey = Math.abs(key);
                     if (key != 0 && absKey != var) {
-                        hashObj = (HashObject) hashMap.get(absKey);
+                        hashObj = hashMap.get(absKey);
                         if (hashObj != null) {
                             hashObj.removeClause(clause);
                         }
@@ -310,7 +311,7 @@ public class Formula {
              * from all clauses in clauseList.
              */
             for (i = 0; i < opsitListSize; i++) {
-                ((Clause) nextVarObj.getN(i)).removeVar(varNeg);
+                (nextVarObj.getN(i)).removeVar(varNeg);
             }
 
             hashObjectStack.push(nextVarObj);
@@ -325,13 +326,13 @@ public class Formula {
             int opsitListSize = nextVarObj.posSize();
 
             for (i = 0; i < listSize; i++) {
-                clause = (Clause) nextVarObj.getN(i);
+                clause = nextVarObj.getN(i);
                 actualSize = clause.actualSize();
                 for (j = 0; j < actualSize; j++) {
                     key = clause.get(j);
                     absKey = Math.abs(key);
                     if (key != 0 && absKey != var) {
-                        hashObj = (HashObject) hashMap.get(absKey);
+                        hashObj = hashMap.get(absKey);
                         if (hashObj != null) {
                             hashObj.removeClause(clause);
                         }
@@ -358,7 +359,7 @@ public class Formula {
      */
     public void backTrack() throws EmptyStackException {
         //  Reduce runtime overhead && clean up code
-        while (!(Boolean) booleanStack.pop()) {
+        while (!booleanStack.pop()) {
             shift--;
             rePopulate((int) rankArray[0][shift], hashObjectStack.pop(), false);
         }
@@ -369,7 +370,7 @@ public class Formula {
 
     /**
      * Re-populate the hashMap
-     * 
+     *
      * @param key the key
      * @param rePopObj the object being repopulated
      * @param varSetTo the boolean value of the object
@@ -418,7 +419,7 @@ public class Formula {
                             hashObj.addClauseNeg(clause);
                         }
                     }
-                }   
+                }
             }
             for (i = 0; i < rVarSize; i++) {
                 clause = rePopObj.getP(i);
@@ -430,7 +431,7 @@ public class Formula {
 
     /**
      * Check for if a clause is size zero.
-     * 
+     *
      * @return true, if successful
      */
     public boolean clauseSizeZero() {
@@ -451,13 +452,13 @@ public class Formula {
      * @see clauseSizeZero()
      */
 
-    public boolean getLastClauseSizeResult(){
+    public boolean getLastClauseSizeResult() {
         return clauseSizeZeroResult;
     }
 
     /**
      * Check if there it is a valid solution.
-     * 
+     *
      * @return true, if successful
      */
     public boolean validSolution() {
@@ -471,7 +472,7 @@ public class Formula {
     /**
      * Check to see if all keys in hashMap are
      * empty.
-     * 
+     *
      * @return true, if successful
      */
     private boolean allEmptyKeyMap() {
@@ -500,7 +501,7 @@ public class Formula {
                 for (i = 0; i < size; i++) {
                     tmpVar = tmp.getP(i).lengthOne();
                     if (tmpVar != 0) {
-                       return tmpVar;
+                        return tmpVar;
                     }
                 }
                 size = tmp.negSize();
@@ -525,7 +526,7 @@ public class Formula {
 
     /**
      * Merge sort.
-     * 
+     *
      * @param temp the temp Array
      * @param lowerBound the lower bound
      * @param upperBound the upper bound
@@ -547,7 +548,7 @@ public class Formula {
 
     /**
      * Merge.
-     * 
+     *
      * @param temp the temp array
      * @param lower the lower
      * @param highMid the high mid
@@ -587,19 +588,19 @@ public class Formula {
             rankArray[0][lowerBound + i] = temp[0][i];
         }
     }
-    
+
     /**
      * Print Solution Set.
      */
-    public void printSolution(){
-      while(!hashObjectStack.isEmpty()){
-        if (booleanStack.pop()) {
-          System.out.print(hashObjectStack.pop().getVariableNumber()+" ");
-        } else {
-          // If false negate variable
-          System.out.print(hashObjectStack.pop().getVariableNumber()*-1+" ");
+    public void printSolution() {
+        while (!hashObjectStack.isEmpty()) {
+            if (booleanStack.pop()) {
+                System.out.print(hashObjectStack.pop().getVariableNumber()+" ");
+            } else {
+                // If false negate variable
+                System.out.print(hashObjectStack.pop().getVariableNumber()*-1+" ");
+            }
         }
-      }
     }
 }
 

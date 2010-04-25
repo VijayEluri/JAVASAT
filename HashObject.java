@@ -13,9 +13,8 @@ public class HashObject {
 
     ArrayList<Clause> pos;
     ArrayList<Clause> neg;
-    //Remove?
     int variableNumber;
-    HashObject(){
+    HashObject() {
         pos = new ArrayList<Clause>();
         neg = new ArrayList<Clause>();
     }
@@ -56,6 +55,7 @@ public class HashObject {
     boolean negEmpty() {
         return neg.size() == 0;
     }
+
     //  Factor out these methods duplicate function above.
     //  Refactor code to use other methods.
     public void createAddPos(Clause clause) {
@@ -65,19 +65,19 @@ public class HashObject {
     public void createAddNeg(Clause clause) {
         neg.add(clause);
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         String returnString = pos.toString()+" ";
         returnString += neg.toString();
         return returnString;
     }
-    //Remove?
 
     public void variableNumber(int variable) {
         variableNumber = variable;
     }
-    public int getVariableNumber(){
+
+    public int getVariableNumber() {
         return variableNumber;
     }
 }
