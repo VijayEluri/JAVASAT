@@ -124,9 +124,9 @@ public class Formula {
      * Fill pow array, with a few of
      * 2^n powers.
      */
-    private void fillPowArray() {
-        powArray = new double[30];
-        for (int i = 0; i < 30; i++) {
+    private void fillPowArray(int size) {
+        powArray = new double[size];
+        for (int i = 0; i < size; i++) {
             powArray[i] = Math.pow(2, i * -1);
         }
     }
@@ -138,7 +138,7 @@ public class Formula {
     private void rankVariables() {
         int clength,size,i,j;
         float sum = 0;
-        fillPowArray();
+        fillPowArray(30);
         int powLength = powArray.length;
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
@@ -187,35 +187,44 @@ public class Formula {
         double maxValue;
         double checkValue = 0;
         int powLength = powArray.length;
-
+        
         one = lengthOneCheck();
-        for (i = shift; one == 0 && i < numVariables; i++) {
-            hashObj = (HashObject) hashMap.get((int) rankArray[0][i]);
-            if (hashObj != null) {
-                size = hashObj.posSize();
-                for (j = 0; j < size; j++) {        // Sums the rank in the posList
-                    tmpClause = hashObj.getP(j);
-                    clength = tmpClause.size();
-                    if (clength < powLength) {
-                        sum += powArray[clength];
-                    } else {
-                        sum += Math.pow(2, (clength * -1));
+        int pSize, nSize, bigger, s;
+        if (one == 0) {
+            for (i = shift; i < numVariables; i++) {
+                hashObj = ((HashObject) hashMap.get((int) rankArray[0][i]));
+                if (hashObj == null) {
+                    //rankArray[1][i] = 0;
+                    continue;
+                }
+                pSize = hashObj.posSize();
+                nSize = hashObj.negSize();
+                bigger = nSize < pSize ? pSize : nSize;
+                for (s = 0; s < bigger; s++) {
+                    if (s < pSize) {
+                        tmpClause = hashObj.getP(s);
+                        clength = tmpClause.size();
+                        if (clength < powLength) {
+                            sum += powArray[clength];
+                        } else {
+                            sum += Math.pow(2, (clength * -1));
+                        }
+                    }
+                    if (s < nSize) {
+                        // Neg half
+                        tmpClause = hashObj.getN(s);
+                        clength = tmpClause.size();
+                        if (clength < powLength) {
+                            sum += powArray[clength];
+                        } else {
+                            sum += Math.pow(2, (clength * -1));
+                        }
                     }
                 }
-                size = hashObj.negSize();
-                for (k = 0; k < size; k++) {        // Sums the rank in the negList
-                    tmpClause = hashObj.getN(k);
-                    clength = tmpClause.size();
-                    if (clength < powLength) {
-                        sum += powArray[clength];
-                    } else {
-                        sum += Math.pow(2, (clength * -1));
-                    }
-                }
-                rankArray[1][i] = sum;          // Stores the Ranking in the second column
-                sum = 0;
-            }
-        }
+        rankArray[1][i] = sum;          // Stores the Ranking in the second column
+        sum = 0;
+    }
+}
 
         maxValue = checkValue;
         swapLargest = false;
@@ -349,18 +358,12 @@ public class Formula {
      */
     public void backTrack() throws EmptyStackException {
         //  Reduce runtime overhead && clean up code
-        int insertKey;
-        HashObject insertObj;
         while (!(Boolean) booleanStack.pop()) {
-              shift--;
-              insertKey = (int) rankArray[0][shift];
-              insertObj = hashObjectStack.pop();
-              rePopulate(insertKey, insertObj, false);
+            shift--;
+            rePopulate((int) rankArray[0][shift], hashObjectStack.pop(), false);
         }
         shift--;
-        insertKey = (int) rankArray[0][shift];
-        insertObj =  hashObjectStack.pop();
-        rePopulate(insertKey, insertObj, true);
+        rePopulate((int) rankArray[0][shift], hashObjectStack.pop(), true);
         justBackTracked = true;
     }
 
@@ -488,36 +491,23 @@ public class Formula {
      */
     private int lengthOneCheck() {
         HashObject tmp;
-        Clause tmpClause;
-        int tmpVar, size, i, j, k, actualSize;
+        int tmpVar, size, i, k;
 
         for (k = shift; k < numVariables; k++) {
             tmp = hashMap.get((int) rankArray[0][k]);
             if (tmp != null) {
                 size = tmp.posSize();
                 for (i = 0; i < size; i++) {
-                    tmpClause = tmp.getP(i);
-                    if (tmpClause.size() == 1) {
-                        actualSize = tmpClause.actualSize();
-                        for (j = 0; j < actualSize; j++) {
-                            tmpVar = tmpClause.get(j);
-                            if (tmpVar != 0) {
-                                return tmpVar;
-                            }
-                        }
+                    tmpVar = tmp.getP(i).lengthOne();
+                    if (tmpVar != 0) {
+                       return tmpVar;
                     }
                 }
                 size = tmp.negSize();
                 for (i = 0; i < size; i++) {
-                    tmpClause = tmp.getN(i);
-                    if (tmpClause.size() == 1) {
-                        actualSize = tmpClause.actualSize();
-                        for (j = 0; j < actualSize; j++) {
-                            tmpVar = tmpClause.get(j);
-                            if (tmpVar != 0) {
-                                return tmpVar;
-                            }
-                        }
+                    tmpVar = tmp.getN(i).lengthOne();
+                    if (tmpVar != 0) {
+                        return tmpVar;
                     }
                 }
             }

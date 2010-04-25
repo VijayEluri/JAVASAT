@@ -11,7 +11,7 @@
 
 public class Clause {
     private int variables[];
-    private int size,length,i;
+    private int size,length,i,found;
 
     public Clause(int size, int a[]){
         variables = a;
@@ -52,6 +52,25 @@ public class Clause {
     public int get(int index){
         //*ensure index is formated for array*
         return variables[index];
+    }
+
+    public int lengthOne(){
+        //return (size == 1) ? findOne() : 0;
+        if(size == 1){
+            return findOne();
+        } else {
+            return 0;
+        }
+    }
+
+    private int findOne(){
+        for(i =0; i<length;i++){
+            //found = variables[i] != 0 ? variables[i] : ;
+            if(variables[i] != 0){
+                return variables[i];
+            }
+        }
+        return 0; //base case sould ever happen.
     }
 
     @Override
