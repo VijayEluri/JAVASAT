@@ -181,7 +181,7 @@ public class Formula {
     public void reRankVariables() {
         Clause tmpClause;
         boolean swapLargest = false;
-        int clength, i, currentMaxKey, absOne;
+        int clength, i, currentMaxKey, absOne, unitKey;
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
@@ -189,9 +189,10 @@ public class Formula {
         double checkValue = 0;
         int powLength = powArray.length;
 
-        unitVar = lengthOneCheck();
+        unitKey = lengthOneCheck(); // returns numVariables when none found.
         int pSize, nSize, bigger, s;
-        if (unitVar == 0) {
+        if (unitKey == numVariables) {
+            unitVar = 0;
             for (i = shift; i < numVariables; i++) {
                 hashObj = (hashMap.get((int) rankArray[0][i]));
                 if (hashObj == null) {
@@ -222,26 +223,20 @@ public class Formula {
                 sum = 0;
             }
         } else {
-            absOne = Math.abs(unitVar);
-            for (i = shift; i < numVariables; i++) {
-                if (absOne == (int) rankArray[0][i]) {
-                    maxValue = rankArray[0][i];
-                    maxValueKey = i;
-                  }
-            }
+            maxValueKey = Math.abs(unitKey);
+            unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
+            maxValue = rankArray[0][maxValueKey];
             swapLargest = true;
         }
         
         //Switch the maxValueKey to the shift position
-        if (swapLargest) {
-            currentMaxKey = (int) rankArray[0][shift];
-            currentMaxRank = rankArray[1][shift];
-            rankArray[0][shift] = rankArray[0][maxValueKey];
-            rankArray[1][shift] = rankArray[1][maxValueKey];
+        currentMaxKey = (int) rankArray[0][shift];
+        currentMaxRank = rankArray[1][shift];
+        rankArray[0][shift] = rankArray[0][maxValueKey];
+        rankArray[1][shift] = rankArray[1][maxValueKey];
 
-            rankArray[0][maxValueKey] = currentMaxKey;
-            rankArray[1][maxValueKey] = currentMaxRank;
-        }
+        rankArray[0][maxValueKey] = currentMaxKey;
+        rankArray[1][maxValueKey] = currentMaxRank;
     }
 
     /**
@@ -454,19 +449,19 @@ public class Formula {
                 for (i = 0; i < size; i++) {
                     tmpVar = tmp.getP(i).lengthOne();
                     if (tmpVar != 0) {
-                        return tmpVar;
+                        return k;
                     }
                 }
                 size = tmp.negSize();
                 for (i = 0; i < size; i++) {
                     tmpVar = tmp.getN(i).lengthOne();
                     if (tmpVar != 0) {
-                        return tmpVar;
+                        return k*-1;
                     }
                 }
             }
         }
-        return 0;
+        return numVariables;
     }
 
     /**
