@@ -221,9 +221,7 @@ public class Formula {
                 rankArray[1][i] = sum;          // Stores the Ranking in the second column
                 sum = 0;
             }
-        }
-
-        if (unitVar != 0) {
+        } else {
             absOne = Math.abs(unitVar);
             for (i = shift; i < numVariables; i++) {
                 if (absOne == (int) rankArray[0][i]) {
