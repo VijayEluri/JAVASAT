@@ -39,12 +39,11 @@ public class Clause {
     }
 
     public void addVar(int var) {
-        boolean notSet = true;
-        for (i=0; i<length && notSet; i++) {
+        for (i=0; i<length; i++) { //&& notSet; i++) {
             if (variables[i] == 0) {
                 variables[i] = var;
-                notSet = false;
                 size++;
+                break;
             }
         }
     }
@@ -75,5 +74,4 @@ public class Clause {
         }
         return returnString;
     }
-
 }

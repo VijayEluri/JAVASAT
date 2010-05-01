@@ -180,12 +180,12 @@ public class Formula {
      */
     public void reRankVariables() {
         Clause tmpClause;
-        boolean swapLargest;
+        boolean swapLargest = false;
         int clength, i, currentMaxKey, absOne;
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
-        double maxValue;
+        double maxValue = 0;
         double checkValue = 0;
         int powLength = powArray.length;
 
@@ -211,32 +211,29 @@ public class Formula {
                         sum += (clength < powLength) ? powArray[clength] : Math.pow(2, (clength * -1));
                     }
                 }
+                
+                if(maxValue < sum ){
+                    maxValueKey = i;
+                    maxValue = sum;
+                    swapLargest = true;
+                }
+
                 rankArray[1][i] = sum;          // Stores the Ranking in the second column
                 sum = 0;
             }
         }
 
-        maxValue = checkValue;
-        swapLargest = false;
         if (unitVar != 0) {
             absOne = Math.abs(unitVar);
             for (i = shift; i < numVariables; i++) {
                 if (absOne == (int) rankArray[0][i]) {
                     maxValue = rankArray[0][i];
                     maxValueKey = i;
-                }
+                  }
             }
             swapLargest = true;
-        } else {
-            for (i = shift; i < numVariables; i++) { //Move largest var to shift
-                checkValue = rankArray[1][i];
-                if (maxValue < checkValue) {
-                    maxValueKey = i;
-                    maxValue = checkValue;
-                    swapLargest = true;
-                }
-            }
         }
+        
         //Switch the maxValueKey to the shift position
         if (swapLargest) {
             currentMaxKey = (int) rankArray[0][shift];
@@ -349,17 +346,18 @@ public class Formula {
                     var = clause.get(j);
                     if (var != 0) {
                         hashObj = hashMap.get(Math.abs(var));
-                        if (hashObj != null && var > 0) {
-                            hashObj.addClausePos(clause);
-                        } else if (hashObj != null) {
-                            hashObj.addClauseNeg(clause);
-                        }
+                        if (hashObj != null){
+                          if(var > 0) {
+                              hashObj.addClausePos(clause);
+                          } else {
+                              hashObj.addClauseNeg(clause);
+                          }
+                        } 
                     }
                 }
             }
             for (i = 0; i < rVarSize; i++) {
-                clause = rePopObj.getN(i);
-                clause.addVar(negkey);
+                rePopObj.getN(i).addVar(negkey);
             }
             hashMap.put(key, rePopObj);
         } else {
@@ -373,17 +371,18 @@ public class Formula {
                     var = clause.get(j);
                     if (var != 0) {
                         hashObj = hashMap.get(Math.abs(var));
-                        if (hashObj != null && var > 0) {
-                            hashObj.addClausePos(clause);
-                        } else if (hashObj != null) {
-                            hashObj.addClauseNeg(clause);
+                        if (hashObj != null){
+                           if( var > 0) {
+                             hashObj.addClausePos(clause);
+                           } else {
+                             hashObj.addClauseNeg(clause);
+                           }
                         }
                     }
                 }
             }
             for (i = 0; i < rVarSize; i++) {
-                clause = rePopObj.getP(i);
-                clause.addVar(negkey);
+                rePopObj.getP(i).addVar(negkey);
             }
             hashMap.put(key, rePopObj);
         }
@@ -422,7 +421,7 @@ public class Formula {
      * @return true, if successful
      */
     public boolean validSolution() {
-        return ( !clauseSizeZero() && (hashMap.isEmpty() || allEmptyKeyMap())) ? true : false;
+        return ( !clauseSizeZero() && (hashMap.isEmpty() || allEmptyKeyMap())); // ? true : false;
     }
 
     /**
@@ -559,4 +558,3 @@ public class Formula {
         }
     }
 }
-
