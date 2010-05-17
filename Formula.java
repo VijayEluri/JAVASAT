@@ -213,7 +213,7 @@ public class Formula {
                     }
                 }
                 
-                if(maxValue < sum ){
+                if(maxValue < sum ){ //finds if sum is the largest so far
                     maxValueKey = i;
                     maxValue = sum;
                     swapLargest = true;
@@ -224,8 +224,8 @@ public class Formula {
             }
         } else {
             maxValueKey = Math.abs(unitKey);
-            unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
             maxValue = rankArray[0][maxValueKey];
+            unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
             swapLargest = true;
         }
         
