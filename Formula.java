@@ -15,8 +15,8 @@ import java.util.EmptyStackException;
 public class Formula {
 
     private Scanner sc;
-    private Stack<Boolean> booleanStack;
-    private Stack<HashObject> hashObjectStack;
+    final private Stack<Boolean> booleanStack;
+    final private Stack<HashObject> hashObjectStack;
     private float rankArray[][];
     private double powArray[];
     private Object clauseList[];
@@ -31,7 +31,7 @@ public class Formula {
      *
      * @param fileName the file name
      */
-    Formula(String fileName) {
+    Formula(final String fileName) {
         importCNF(fileName);
         rankArray = new float[2][numVariables];
         booleanStack = new Stack<Boolean>();
@@ -46,7 +46,7 @@ public class Formula {
      *
      * @param fileName the file name
      */
-    private void importCNF(String fileName) {
+    private void importCNF(final String fileName) {
         int clause, i, nextVar, size;
         int tmp[];
         try {
@@ -63,7 +63,7 @@ public class Formula {
         numVariables = sc.nextInt();
         numClauses = sc.nextInt();
         clauseList = new Object[numClauses];
-        ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
+        final ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
 
         /*
          * Populate the clause list
@@ -124,7 +124,7 @@ public class Formula {
      * Fill pow array, with a few of
      * 2^n powers.
      */
-    private void fillPowArray(int size) {
+    private void fillPowArray(final int size) {
         powArray = new double[size];
         for (int i = 0; i < size; i++) {
             powArray[i] = Math.pow(2, i * -1);
@@ -139,15 +139,14 @@ public class Formula {
         int clength,size,i,j;
         float sum = 0;
         fillPowArray(30);
-        int powLength = powArray.length;
+        final int powLength = powArray.length;
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
             hashObj =  hashMap.get(i);
             if (hashObj != null) {
                 size = hashObj.posSize();
                 for (j = 0; j < size; j++) {        // Sums the rank in the posList
-                    Clause tmpClause = hashObj.getP(j);
-                    clength = tmpClause.size();
+                    clength = hashObj.getP(j).size();
                     if (clength < powLength) {
                         sum += powArray[clength];
                     } else {
@@ -156,7 +155,6 @@ public class Formula {
                 }
                 size = hashObj.negSize();
                 for (j = 0; j < size; j++) {        // Sums the rank in the negList
-
                     clength = hashObj.getN(j).size();
                     if (clength < powLength) {
                         sum += powArray[clength];
@@ -178,22 +176,21 @@ public class Formula {
      * Re-rank variables.
      */
     public void reRankVariables() {
-        Clause tmpClause;
-        boolean swapLargest = false;
-        int clength, i, currentMaxKey, absOne, unitKey;
+        //Clause tmpClause;
+        //boolean swapLargest = false;
+        int clength, i, currentMaxKey, unitKey;
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
         double maxValue = 0;
-        double checkValue = 0;
-        int powLength = powArray.length;
+        final int powLength = powArray.length;
 
         unitKey = lengthOneCheck(); // returns numVariables when none found.
         int pSize, nSize, bigger, s;
         if (unitKey == numVariables) {
             unitVar = 0;
             for (i = shift; i < numVariables; i++) {
-                hashObj = (hashMap.get((int) rankArray[0][i]));
+                hashObj = hashMap.get((int) rankArray[0][i]);
                 if (hashObj == null) {
                     //rankArray[1][i] = 0; //not sure if good/bad
                     continue;
@@ -211,11 +208,11 @@ public class Formula {
                         sum += (clength < powLength) ? powArray[clength] : Math.pow(2, (clength * -1));
                     }
                 }
-                
+
                 if(maxValue < sum ){ //finds if sum is the largest so far
                     maxValueKey = i;
                     maxValue = sum;
-                    swapLargest = true;
+                    //swapLargest = true;
                 }
 
                 rankArray[1][i] = sum;          // Stores the Ranking in the second column
@@ -223,11 +220,11 @@ public class Formula {
             }
         } else {
             maxValueKey = Math.abs(unitKey);
-            maxValue = rankArray[0][maxValueKey];
+            //maxValue = rankArray[0][maxValueKey];
             unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
-            swapLargest = true;
+            //swapLargest = true;
         }
-        
+
         //Switch the maxValueKey to the shift position
         currentMaxKey = (int) rankArray[0][shift];
         currentMaxRank = rankArray[1][shift];
@@ -324,7 +321,7 @@ public class Formula {
      * @param rePopObj the object being repopulated
      * @param varSetTo the boolean value of the object
      */
-    private void rePopulate(int key, HashObject rePopObj, boolean varSetTo) {
+    private void rePopulate(final int key,final HashObject rePopObj,final boolean varSetTo) {
         Clause clause;
         int var, negkey, rVarSize, rClauseSize, i, j, actualSize;
         if (varSetTo) {
@@ -344,7 +341,7 @@ public class Formula {
                           } else {
                               hashObj.addClauseNeg(clause);
                           }
-                        } 
+                        }
                     }
                 }
             }
@@ -386,7 +383,7 @@ public class Formula {
      * @return true, if successful
      */
     public boolean clauseSizeZero() {
-        int length = clauseList.length;
+        final int length = clauseList.length;
         for (int i = 0; i < length; i++) {
             if (((Clause) clauseList[i]).size() == 0) {
                 clauseSizeZeroResult = true;
@@ -467,7 +464,7 @@ public class Formula {
      * Merge sort.
      */
     private void mergeSort() {
-        float temp[][] = new float[2][numVariables];
+        final float temp[][] = new float[2][numVariables];
         mergeSort(temp, 0 + shift, numVariables - 1);
     }
 
@@ -478,11 +475,11 @@ public class Formula {
      * @param lowerBound the lower bound
      * @param upperBound the upper bound
      */
-    private void mergeSort(float temp[][], int lowerBound, int upperBound) {
+    private void mergeSort(final float temp[][],final int lowerBound, final int upperBound) {
         if (lowerBound == upperBound) {
             return;                   // If index == 1 do nothing
         } else {
-            int mid = (lowerBound + upperBound) / 2;    // Get midpoint
+            final int mid = (lowerBound + upperBound) / 2;    // Get midpoint
 
             mergeSort(temp, lowerBound, mid);     // Lower Half
 
@@ -504,11 +501,11 @@ public class Formula {
     private void merge(float temp[][], int lower, int highMid, int upperBound) {
         int i = 0;              // temp index
 
-        int lowerBound = lower;       // saves lower value
+        final int lowerBound = lower;       // saves lower value
 
-        int lowMid = highMid - 1;       // sets the lower mid point
+        final int lowMid = highMid - 1;       // sets the lower mid point
 
-        int n = upperBound - lowerBound + 1;  // number of ints in range
+        final int n = upperBound - lowerBound + 1;  // number of ints in range
 
         while (lower <= lowMid && highMid <= upperBound) {
             if (rankArray[1][lower] > rankArray[1][highMid]) {

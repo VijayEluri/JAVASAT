@@ -4,24 +4,28 @@
  */
 import java.util.EmptyStackException;
 
-public class Solver {
+public final class Solver {
 
     public static boolean done = false;
 
+
+    private Solver(){
+
+    }
     /**
      * @param args the command line arguments
      */
 
-    public static void main(String[] args) {
-        Formula f = new Formula(args[0]);
+    public static void main(final String[] args) {
+        final Formula formula = new Formula(args[0]);
         try {
             while (!done) {
-                if (f.validSolution()) {
+                if (formula.validSolution()) {
                     done = true;
-                } else if (f.getLastClauseSizeResult()) {
-                    f.backTrack();
+                } else if (formula.getLastClauseSizeResult()) {
+                    formula.backTrack();
                 } else {
-                    f.forwardTrack();
+                    formula.forwardTrack();
                 }
             }
         } catch (EmptyStackException e) {
@@ -31,7 +35,7 @@ public class Solver {
         }
 
         System.out.println("Solvable Solution");
-        f.printSolution();
+        formula.printSolution();
         System.exit(0);
     }
 }

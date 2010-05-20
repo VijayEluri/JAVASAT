@@ -11,9 +11,10 @@
 
 public class Clause {
     private int variables[];
-    private int size,length,i,found;
+    private int size,i;
+    final private int length;
 
-    public Clause(int size, int a[]) {
+    public Clause(final int size,final int a[]) {
         variables = a;
         length = size;
         this.size = size;
@@ -27,7 +28,7 @@ public class Clause {
         return length;
     }
 
-    public void removeVar(int var) {
+    public void removeVar(final int var) {
         //remove and place a 0 in place of the variable in the array to hold position
         //also update clause size with the update size of the array
         for (i=0; i<length; i++) {
@@ -38,7 +39,7 @@ public class Clause {
         }
     }
 
-    public void addVar(int var) {
+    public void addVar(final int var) {
         for (i=0; i<length; i++) { //&& notSet; i++) {
             if (variables[i] == 0) {
                 variables[i] = var;
@@ -48,7 +49,7 @@ public class Clause {
         }
     }
 
-    public int get(int index) {
+    public int get(final int index) {
         //*ensure index is formated for array*
         return variables[index];
     }
@@ -68,10 +69,13 @@ public class Clause {
 
     @Override
     public String toString() {
-        String returnString = "";
-        for (i = 0; i< variables.length; i++) {
-            returnString += variables[i] + " ";
+        final String delimiter = " ";
+        final int varLen = variables.length;
+        final StringBuilder buf = new StringBuilder();
+        for (int curVar = 0; curVar < varLen; ++curVar) {
+            buf.append(variables[curVar]);
+            buf.append(delimiter);
         }
-        return returnString;
+        return buf.toString();
     }
 }

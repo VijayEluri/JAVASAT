@@ -11,33 +11,33 @@ import java.util.ArrayList;
  */
 public class HashObject {
 
-    ArrayList<Clause> pos;
-    ArrayList<Clause> neg;
-    int variableNumber;
+    final private ArrayList<Clause> pos;
+    final private ArrayList<Clause> neg;
+    private int variableNumber;
     HashObject() {
         pos = new ArrayList<Clause>();
         neg = new ArrayList<Clause>();
     }
 
-    public void removeClause(Clause clause) {
+    public void removeClause(final Clause clause) {
         pos.remove(clause);
         neg.remove(clause);
     }
 
-    public void addClausePos(Clause clause) {
+    public void addClausePos(final Clause clause) {
         pos.add(clause);
     }
 
-    public void addClauseNeg(Clause clause) {
+    public void addClauseNeg(final Clause clause) {
         neg.add(clause);
     }
 
-    public Clause getP(int k) {
-        return pos.get(k);
+    public Clause getP(final int clause) {
+        return pos.get(clause);
     }
 
-    public Clause getN(int k) {
-        return neg.get(k);
+    public Clause getN(final int clause) {
+        return neg.get(clause);
     }
 
     public int posSize() {
@@ -48,21 +48,21 @@ public class HashObject {
         return neg.size();
     }
 
-    boolean posEmpty() {
-        return pos.size() == 0;
+    public boolean posEmpty() {
+        return pos.isEmpty();
     }
 
-    boolean negEmpty() {
-        return neg.size() == 0;
+    public boolean negEmpty() {
+        return neg.isEmpty();
     }
 
     //  Factor out these methods duplicate function above.
     //  Refactor code to use other methods.
-    public void createAddPos(Clause clause) {
+    public void createAddPos(final Clause clause) {
         pos.add(clause);
     }
 
-    public void createAddNeg(Clause clause) {
+    public void createAddNeg(final Clause clause) {
         neg.add(clause);
     }
 
@@ -73,7 +73,7 @@ public class HashObject {
         return returnString;
     }
 
-    public void variableNumber(int variable) {
+    public void variableNumber(final int variable) {
         variableNumber = variable;
     }
 
