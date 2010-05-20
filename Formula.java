@@ -60,7 +60,6 @@ public class Formula {
             sc.nextLine();
         }
 
-        sc.findInLine("p cnf");
         numVariables = sc.nextInt();
         numClauses = sc.nextInt();
         clauseList = new Object[numClauses];
