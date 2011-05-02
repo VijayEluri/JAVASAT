@@ -262,7 +262,7 @@ public class Formula {
         */
        booleanValue = (!justBackTracked && var > 0) ? true : false;  //
        var = Math.abs(var); // always positive: p or n
-       varNeg = booleanValue ? var * -1 : var; //flip for negitive: pos * -1 = n : neg * -1 = p
+       varNeg = booleanValue ? -var : var;//var * -1 : var; //flip for negitive: pos * -1 = n : neg * -1 = p
        if (booleanValue) {
            listSize = nextVarObj.posSize();
            opsitListSize = nextVarObj.negSize();
@@ -325,7 +325,7 @@ public class Formula {
         Clause clause;
         int var, negkey, rVarSize, rClauseSize, i, j, actualSize;
         if (varSetTo) {
-            negkey = key * -1;
+            negkey = -key; //key * -1;
             rVarSize = rePopObj.negSize();
             rClauseSize = rePopObj.posSize();
             for (i = 0; i < rClauseSize; i++) {
@@ -452,7 +452,7 @@ public class Formula {
                 for (i = 0; i < size; i++) {
                     tmpVar = tmp.getN(i).lengthOne();
                     if (tmpVar != 0) {
-                        return k*-1;
+                        return -k;
                     }
                 }
             }
@@ -542,7 +542,7 @@ public class Formula {
                 System.out.print(hashObjectStack.pop().getVariableNumber()+" ");
             } else {
                 // If false negate variable
-                System.out.print(hashObjectStack.pop().getVariableNumber()*-1+" ");
+                System.out.print(-hashObjectStack.pop().getVariableNumber()+" ");
             }
         }
     }
