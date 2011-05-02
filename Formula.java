@@ -261,7 +261,7 @@ public class Formula {
         * just back tracked or not.
         */
        booleanValue = (!justBackTracked && var > 0) ? true : false;  //
-       var = Math.abs(var); // always positive: p or n
+       var = absKey; //Math.abs(var); // always positive: p or n
        varNeg = booleanValue ? -var : var;//var * -1 : var; //flip for negitive: pos * -1 = n : neg * -1 = p
        if (booleanValue) {
            listSize = nextVarObj.posSize();
