@@ -276,8 +276,7 @@ public class Formula {
            actualSize = clause.actualSize();
            for (j = 0; j < actualSize; j++) {
                key = clause.get(j);
-               absKey = Math.abs(key);
-               if (key != 0 && absKey != var) {
+               if (key != 0 && (absKey = Math.abs(key)) != var) {
                    hashObj = (HashObject) hashMap.get(absKey);
                    if (hashObj != null) {
                        hashObj.removeClause(clause);
