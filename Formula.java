@@ -22,7 +22,7 @@ public class Formula {
     private Object clauseList[];
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
-    private int numVariables,numClauses,key,unitVar;
+    private int numVariables,numClauses,unitVar;
     private int shift = 0;
     private boolean clauseSizeZeroResult;
     private boolean justBackTracked = false;
@@ -243,7 +243,7 @@ public class Formula {
        Clause clause;
        HashObject nextVarObj;
        boolean booleanValue;
-       int var, absKey, actualSize, j, i, opsitListSize, listSize, varNeg;
+       int var, absKey, actualSize, j, i, opsitListSize, listSize, varNeg, key;
        if (unitVar != 0) {
            var = unitVar;
            absKey = Math.abs(var);
