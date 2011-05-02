@@ -40,7 +40,7 @@ public class Clause {
     }
 
     public void addVar(final int var) {
-        for (i=0; i<length; i++) { //&& notSet; i++) {
+        for (i=0; i<length; i++) {
             if (variables[i] == 0) {
                 variables[i] = var;
                 size++;
@@ -64,7 +64,7 @@ public class Clause {
                 return variables[i];
             }
         }
-        return 0; //base case sould ever happen.
+        return 0; //base case should ever happen.
     }
 
     @Override

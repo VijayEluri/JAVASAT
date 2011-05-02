@@ -385,12 +385,10 @@ public class Formula {
         final int length = clauseList.length;
         for (int i = 0; i < length; i++) {
             if (((Clause) clauseList[i]).size() == 0) {
-                clauseSizeZeroResult = true;
-                return clauseSizeZeroResult;
+                return (clauseSizeZeroResult = true);
             }
         }
-        clauseSizeZeroResult = false;
-        return clauseSizeZeroResult;
+        return (clauseSizeZeroResult = false);
     }
 
     /**
