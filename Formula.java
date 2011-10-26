@@ -136,43 +136,14 @@ public class Formula {
      * first time.
      */
     private void rankVariables() {
-        int clength,size,i,j;
-        float sum = 0;
-		double tmp;
+        int i;
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
-            hashObj =  hashMap.get(i);
-            if (hashObj != null) {
-                size = hashObj.posSize();
-                for (j = 0; j < size; j++) {        // Sums the rank in the posList
-                    clength = hashObj.getP(j).size();
-	                if (powerMap.containsKey(clength)) {
-	                    sum += powerMap.get(clength);
-	                } else {
-	                    tmp =  Math.pow(2, (clength * -1));
-	                    sum += tmp;
-	                    powerMap.put(clength, tmp);
-	                }
-                }
-                size = hashObj.negSize();
-                for (j = 0; j < size; j++) {        // Sums the rank in the negList
-                    clength = hashObj.getN(j).size();
-	                if (powerMap.containsKey(clength)) {
-	                    sum += powerMap.get(clength);
-	                } else {
-	                    tmp =  Math.pow(2, (clength * -1));
-	                    sum += tmp;
-	                    powerMap.put(clength, tmp);
-	                }
-                }
-                rankArray[0][i - 1] = i;            // Stores the Variable in the first column
-                rankArray[1][i - 1] = sum;          // Stores the Ranking in the second column
-                sum = 0;
-            }
-
+	        rankArray[0][i - 1] = i;            // Stores the Variable in the first column
+	        rankArray[1][i - 1] = 0.0f;//sum;          // Stores the Ranking in the second column
         }
 
-        mergeSort();
+        // mergeSort();
     }
 
     /**
