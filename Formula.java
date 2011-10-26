@@ -23,7 +23,7 @@ public class Formula {
     private Clause[] clauseList;
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
-    private int numVariables,numClauses,unitVar;
+    private int numVariables,numClauses;
     private int shift = 0;
     private boolean clauseSizeZeroResult;
     private boolean justBackTracked = false;
@@ -142,63 +142,54 @@ public class Formula {
     public void reRankVariables() {
         //Clause tmpClause;
         //boolean swapLargest = false;
-        int clength, i, currentMaxKey, unitKey;
+        int clength, i, currentMaxKey;
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
 		double tmp;
         double maxValue = 0;
 
-        unitKey = lengthOneCheck(); // returns numVariables when none found.
         int pSize, nSize, bigger, s;
-        if (unitKey == numVariables) {
-            unitVar = 0;
-            for (i = shift; i < numVariables; i++) {
-                hashObj = hashMap.get((int) rankArray[0][i]);
-                if (hashObj == null) {
-                    //rankArray[1][i] = 0; //not sure if good/bad
-                    continue;
-                }
-                pSize = hashObj.posSize();
-                nSize = hashObj.negSize();
-                bigger = nSize < pSize ? pSize : nSize;
-                for (s = 0; s < bigger; s++) {
-                    if (s < pSize) {
-                        clength = hashObj.getP(s).size();
-                        if (powerMap.containsKey(clength)) {
-                            sum += powerMap.get(clength);
-                        } else {
-                            tmp =  Math.pow(2, (clength * -1));
-                            sum += tmp;
-                            powerMap.put(clength, tmp);
-                        }
-                    }
-                    if (s < nSize) {
-                        clength = hashObj.getN(s).size();
-                        if (powerMap.containsKey(clength)) {
-                            sum += powerMap.get(clength);
-                        } else {
-                            tmp =  Math.pow(2, (clength * -1));
-                            sum += tmp;
-                            powerMap.put(clength, tmp);
-                        }
-                    }
-                }
-
-                if(maxValue < sum ){ //finds if sum is the largest so far
-                    maxValueKey = i;
-                    maxValue = sum;
-                    //swapLargest = true;
-                }
-
-                rankArray[1][i] = sum;          // Stores the Ranking in the second column
-                sum = 0;
+        for (i = shift; i < numVariables; i++) {
+            hashObj = hashMap.get((int) rankArray[0][i]);
+            if (hashObj == null) {
+                //rankArray[1][i] = 0; //not sure if good/bad
+                continue;
             }
-        } else {
-            maxValueKey = abs(unitKey);
-            //maxValue = rankArray[0][maxValueKey];
-            unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
-            //swapLargest = true;
+            pSize = hashObj.posSize();
+            nSize = hashObj.negSize();
+            bigger = nSize < pSize ? pSize : nSize;
+            for (s = 0; s < bigger; s++) {
+                if (s < pSize) {
+                    clength = hashObj.getP(s).size();
+                    if (powerMap.containsKey(clength)) {
+                        sum += powerMap.get(clength);
+                    } else {
+                        tmp =  Math.pow(2, (clength * -1));
+                        sum += tmp;
+                        powerMap.put(clength, tmp);
+                    }
+                }
+                if (s < nSize) {
+                    clength = hashObj.getN(s).size();
+                    if (powerMap.containsKey(clength)) {
+                        sum += powerMap.get(clength);
+                    } else {
+                        tmp =  Math.pow(2, (clength * -1));
+                        sum += tmp;
+                        powerMap.put(clength, tmp);
+                    }
+                }
+            }
+
+            if(maxValue < sum ){ //finds if sum is the largest so far
+                maxValueKey = i;
+                maxValue = sum;
+                //swapLargest = true;
+            }
+
+            rankArray[1][i] = sum;          // Stores the Ranking in the second column
+            sum = 0;
         }
 
         //Switch the maxValueKey to the shift position
@@ -211,26 +202,54 @@ public class Formula {
         rankArray[1][maxValueKey] = currentMaxRank;
     }
 
+    private int unitPropCheck(){
+        int unitVar, unitKey, lengthTest;
+        lengthTest = lengthOneCheck();
+        if(lengthTest != 0){
+            unitVar = (lengthTest < 0 ) ? (int) rankArray[0][abs(lengthTest)]*-1 : (int) rankArray[0][abs(lengthTest)];
+            shiftToUnit(lengthTest);
+        }
+        else
+            unitVar = 0;
+        return unitVar;
+    }
+
+    private void shiftToUnit(final int unitKey){
+        int currentMaxKey;
+        float currentMaxRank;
+        int absUnitKey = abs(unitKey);
+
+        //Switch the maxValueKey to the shift position
+        currentMaxKey = (int) rankArray[0][shift];
+        currentMaxRank = rankArray[1][shift];
+        rankArray[0][shift] = rankArray[0][absUnitKey];
+        rankArray[1][shift] = rankArray[1][absUnitKey];
+
+        rankArray[0][absUnitKey] = currentMaxKey;
+        rankArray[1][absUnitKey] = currentMaxRank;
+    }
+
     /**
      * Forward tracks down the tree.
      */
    public void forwardTrack() {
-       reRankVariables();
        Clause clause;
        HashObject nextVarObj;
        boolean booleanValue;
        int var, absKey, actualSize, j, i, opsitListSize, listSize, varNeg, key;
-       if (unitVar != 0) {
-           var = unitVar;
+
+       var = unitPropCheck();
+       if (var != 0) {
            absKey = abs(var);
-           nextVarObj =  hashMap.get(absKey);
-           hashMap.remove(absKey);
        } else {
+           reRankVariables();
            var = (int) rankArray[0][shift];
            absKey = abs(var);
-           nextVarObj =  hashMap.get(absKey);
-           hashMap.remove(absKey);
        }
+       
+       nextVarObj =  hashMap.get(absKey);
+       hashMap.remove(absKey);
+       
        /*
         * This statement determines whether
         * to branch true or false by checking if it has
@@ -430,7 +449,7 @@ public class Formula {
                 }
             }
         }
-        return numVariables;
+        return 0;
     }
 
     /**
