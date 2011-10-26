@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.EmptyStackException;
+import static java.lang.Math.abs;
 
 /**
  * The Class Formula.
@@ -103,7 +104,7 @@ public class Formula {
             clauseAtISize = clauseAtI.size();
             for (j = 0; j < clauseAtISize; j++) {
                 clauseVar = clauseAtI.get(j);
-                clauseVarKey = Math.abs(clauseVar); //abs of variable for key
+                clauseVarKey = abs(clauseVar); //abs of variable for key
                 prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
                     hashTmp = new HashObject();
@@ -194,7 +195,7 @@ public class Formula {
                 sum = 0;
             }
         } else {
-            maxValueKey = Math.abs(unitKey);
+            maxValueKey = abs(unitKey);
             //maxValue = rankArray[0][maxValueKey];
             unitVar = (unitKey < 0 ) ? (int) rankArray[0][maxValueKey]*-1 : (int) rankArray[0][maxValueKey];
             //swapLargest = true;
@@ -221,12 +222,12 @@ public class Formula {
        int var, absKey, actualSize, j, i, opsitListSize, listSize, varNeg, key;
        if (unitVar != 0) {
            var = unitVar;
-           absKey = Math.abs(var);
+           absKey = abs(var);
            nextVarObj =  hashMap.get(absKey);
            hashMap.remove(absKey);
        } else {
            var = (int) rankArray[0][shift];
-           absKey = Math.abs(var);
+           absKey = abs(var);
            nextVarObj =  hashMap.get(absKey);
            hashMap.remove(absKey);
        }
@@ -236,7 +237,7 @@ public class Formula {
         * just back tracked or not.
         */
        booleanValue = (!justBackTracked && var > 0) ? true : false;  //
-       var = absKey; //Math.abs(var); // always positive: p or n
+       var = absKey; //abs(var); // always positive: p or n
        varNeg = booleanValue ? -var : var;//var * -1 : var; //flip for negitive: pos * -1 = n : neg * -1 = p
        if (booleanValue) {
            listSize = nextVarObj.posSize();
@@ -251,7 +252,7 @@ public class Formula {
            actualSize = clause.actualSize();
            for (j = 0; j < actualSize; j++) {
                key = clause.get(j);
-               if (key != 0 && (absKey = Math.abs(key)) != var) {
+               if (key != 0 && (absKey = abs(key)) != var) {
                    hashObj = (HashObject) hashMap.get(absKey);
                    if (hashObj != null) {
                        hashObj.removeClause(clause);
@@ -308,7 +309,7 @@ public class Formula {
                 for (j = 0; j < actualSize; j++) {
                     var = clause.get(j);
                     if (var != 0) {
-                        hashObj = hashMap.get(Math.abs(var));
+                        hashObj = hashMap.get(abs(var));
                         if (hashObj != null){
                           if(var > 0) {
                               hashObj.addClausePos(clause);
@@ -333,7 +334,7 @@ public class Formula {
                 for (j = 0; j < actualSize; j++) {
                     var = clause.get(j);
                     if (var != 0) {
-                        hashObj = hashMap.get(Math.abs(var));
+                        hashObj = hashMap.get(abs(var));
                         if (hashObj != null){
                            if( var > 0) {
                              hashObj.addClausePos(clause);
