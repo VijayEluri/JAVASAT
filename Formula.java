@@ -146,14 +146,14 @@ public class Formula {
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
-        double tmp;
+        Double tmp;
         double maxValue = 0;
 
         int pSize, nSize, bigger, s;
         for (i = shift; i < numVariables; i++) {
             hashObj = hashMap.get((int) rankArray[0][i]);
             if (hashObj == null) {
-                //rankArray[1][i] = 0; //not sure if good/bad
+                rankArray[1][i] = 0; //not sure if good/bad
                 continue;
             }
             pSize = hashObj.posSize();
@@ -162,8 +162,9 @@ public class Formula {
             for (s = 0; s < bigger; s++) {
                 if (s < pSize) {
                     clength = hashObj.getP(s).size();
-                    if (powerMap.containsKey(clength)) {
-                        sum += powerMap.get(clength);
+                    tmp = powerMap.get(clength);
+                    if (tmp != null) {
+                        sum += tmp;
                     } else {
                         tmp =  Math.pow(2, (clength * -1));
                         sum += tmp;
@@ -172,8 +173,9 @@ public class Formula {
                 }
                 if (s < nSize) {
                     clength = hashObj.getN(s).size();
-                    if (powerMap.containsKey(clength)) {
-                        sum += powerMap.get(clength);
+                    tmp = powerMap.get(clength);
+                    if (tmp != null) {
+                        sum += tmp;
                     } else {
                         tmp =  Math.pow(2, (clength * -1));
                         sum += tmp;
@@ -185,7 +187,6 @@ public class Formula {
             if(maxValue < sum ){ //finds if sum is the largest so far
                 maxValueKey = i;
                 maxValue = sum;
-                //swapLargest = true;
             }
 
             rankArray[1][i] = sum;          // Stores the Ranking in the second column
@@ -203,11 +204,11 @@ public class Formula {
     }
 
     private int unitPropCheck(){
-        int unitVar, unitKey, lengthTest;
-        lengthTest = lengthOneCheck();
-        if(lengthTest != 0){
-            unitVar = (lengthTest < 0 ) ? (int) rankArray[0][abs(lengthTest)]*-1 : (int) rankArray[0][abs(lengthTest)];
-            shiftToUnit(lengthTest);
+        int unitVar, unitKey;
+        unitKey = lengthOneCheck();
+        if(unitKey != 0){
+            unitVar = (unitKey < 0 ) ? (int) rankArray[0][abs(unitKey)]*-1 : (int) rankArray[0][abs(unitKey)];
+            shiftToUnit(unitKey);
         }
         else
             unitVar = 0;
@@ -219,7 +220,6 @@ public class Formula {
         float currentMaxRank;
         int absUnitKey = abs(unitKey);
 
-        //Switch the maxValueKey to the shift position
         currentMaxKey = (int) rankArray[0][shift];
         currentMaxRank = rankArray[1][shift];
         rankArray[0][shift] = rankArray[0][absUnitKey];
