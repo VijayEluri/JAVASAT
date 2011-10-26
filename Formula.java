@@ -36,8 +36,8 @@ public class Formula {
         rankArray = new float[2][numVariables];
         booleanStack = new Stack<Boolean>();
         hashObjectStack = new Stack<HashObject>();
+		powerMap = new HashMap<Integer, Double>();
         populateHashMap();
-        fillPowArray(30);
         rankVariables();
     }
 
@@ -117,17 +117,6 @@ public class Formula {
                     prevHashObj.addClauseNeg(clauseAtI);
                 }
             }
-        }
-    }
-
-    /**
-     * Fill pow cache, with a few of
-     * 2^n powers.
-     */
-    private void fillPowArray(final int size) {
-        powerMap = new HashMap<Integer, Double>();
-        for (int i = 0; i < size; i++) {
-            powerMap.put(i, Math.pow(2, i * -1));
         }
     }
 
