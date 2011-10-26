@@ -59,12 +59,12 @@ public class Clause {
     }
 
     private int findOne() {
-        for(i = 0; i<length ; i++) {
+        for(i = 0; i<length; i++) {
             if(variables[i] != 0) {
-                return variables[i];
+                break;
             }
         }
-        return 0; //base case should ever happen.
+        return variables[i];
     }
 
     @Override

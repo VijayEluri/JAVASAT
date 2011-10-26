@@ -18,8 +18,8 @@ public class Formula {
     final private Stack<Boolean> booleanStack;
     final private Stack<HashObject> hashObjectStack;
     private float rankArray[][];
-    private double powArray[];
-    private Object clauseList[];
+    private HashMap<Integer, Double> powerMap;
+    private Clause[] clauseList;
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
     private int numVariables,numClauses,unitVar;
@@ -37,6 +37,7 @@ public class Formula {
         booleanStack = new Stack<Boolean>();
         hashObjectStack = new Stack<HashObject>();
         populateHashMap();
+        fillPowArray(30);
         rankVariables();
     }
 
@@ -52,7 +53,6 @@ public class Formula {
         try {
             sc = new Scanner(new File(fileName));
         } catch (FileNotFoundException e) {
-            //e.printStackTrace();
             System.exit(1);
         }
 
@@ -62,7 +62,7 @@ public class Formula {
 
         numVariables = sc.nextInt();
         numClauses = sc.nextInt();
-        clauseList = new Object[numClauses];
+        clauseList = new Clause[numClauses];
         final ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
 
         /*
@@ -99,7 +99,7 @@ public class Formula {
         HashObject prevHashObj;
         int clauseAtISize;
         for (i = 0; i < numClauses; i++) {
-            clauseAtI = (Clause) clauseList[i];
+            clauseAtI = clauseList[i];
             clauseAtISize = clauseAtI.size();
             for (j = 0; j < clauseAtISize; j++) {
                 clauseVar = clauseAtI.get(j);
@@ -121,13 +121,13 @@ public class Formula {
     }
 
     /**
-     * Fill pow array, with a few of
+     * Fill pow cache, with a few of
      * 2^n powers.
      */
     private void fillPowArray(final int size) {
-        powArray = new double[size];
+        powerMap = new HashMap<Integer, Double>();
         for (int i = 0; i < size; i++) {
-            powArray[i] = Math.pow(2, i * -1);
+            powerMap.put(i, Math.pow(2, i * -1));
         }
     }
 
@@ -138,8 +138,7 @@ public class Formula {
     private void rankVariables() {
         int clength,size,i,j;
         float sum = 0;
-        fillPowArray(30);
-        final int powLength = powArray.length;
+		double tmp;
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
             hashObj =  hashMap.get(i);
@@ -147,20 +146,24 @@ public class Formula {
                 size = hashObj.posSize();
                 for (j = 0; j < size; j++) {        // Sums the rank in the posList
                     clength = hashObj.getP(j).size();
-                    if (clength < powLength) {
-                        sum += powArray[clength];
-                    } else {
-                        sum += Math.pow(2, (clength * -1));
-                    }
+	                if (powerMap.containsKey(clength)) {
+	                    sum += powerMap.get(clength);
+	                } else {
+	                    tmp =  Math.pow(2, (clength * -1));
+	                    sum += tmp;
+	                    powerMap.put(clength, tmp);
+	                }
                 }
                 size = hashObj.negSize();
                 for (j = 0; j < size; j++) {        // Sums the rank in the negList
                     clength = hashObj.getN(j).size();
-                    if (clength < powLength) {
-                        sum += powArray[clength];
-                    } else {
-                        sum += Math.pow(2, (clength * -1));
-                    }
+	                if (powerMap.containsKey(clength)) {
+	                    sum += powerMap.get(clength);
+	                } else {
+	                    tmp =  Math.pow(2, (clength * -1));
+	                    sum += tmp;
+	                    powerMap.put(clength, tmp);
+	                }
                 }
                 rankArray[0][i - 1] = i;            // Stores the Variable in the first column
                 rankArray[1][i - 1] = sum;          // Stores the Ranking in the second column
@@ -182,8 +185,8 @@ public class Formula {
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
+		double tmp;
         double maxValue = 0;
-        final int powLength = powArray.length;
 
         unitKey = lengthOneCheck(); // returns numVariables when none found.
         int pSize, nSize, bigger, s;
@@ -201,11 +204,23 @@ public class Formula {
                 for (s = 0; s < bigger; s++) {
                     if (s < pSize) {
                         clength = hashObj.getP(s).size();
-                        sum += (clength < powLength) ? powArray[clength] : Math.pow(2, (clength * -1));
+                        if (powerMap.containsKey(clength)) {
+                            sum += powerMap.get(clength);
+                        } else {
+                            tmp =  Math.pow(2, (clength * -1));
+                            sum += tmp;
+                            powerMap.put(clength, tmp);
+                        }
                     }
                     if (s < nSize) {
                         clength = hashObj.getN(s).size();
-                        sum += (clength < powLength) ? powArray[clength] : Math.pow(2, (clength * -1));
+                        if (powerMap.containsKey(clength)) {
+                            sum += powerMap.get(clength);
+                        } else {
+                            tmp =  Math.pow(2, (clength * -1));
+                            sum += tmp;
+                            powerMap.put(clength, tmp);
+                        }
                     }
                 }
 

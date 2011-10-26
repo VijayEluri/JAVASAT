@@ -1,20 +1,8 @@
-/**
- * Main Class for Davis-Putnam Solver
- * @author Trevor Stevens
- */
 import java.util.EmptyStackException;
 
 public final class Solver {
 
-    public static boolean done = false;
-
-
-    private Solver(){
-
-    }
-    /**
-     * @param args the command line arguments
-     */
+    private static boolean done = false;
 
     public static void main(final String[] args) {
         final Formula formula = new Formula(args[0]);

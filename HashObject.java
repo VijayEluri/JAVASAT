@@ -1,8 +1,3 @@
-/*
- * Contains 2 ArrayLists for Pos and Neg Clauses
- * Contains the clauses that each Variable is contained in
- */
-
 import java.util.ArrayList;
 
 /**
@@ -14,7 +9,7 @@ public class HashObject {
     final private ArrayList<Clause> pos;
     final private ArrayList<Clause> neg;
     private int variableNumber;
-    HashObject() {
+    public HashObject() {
         pos = new ArrayList<Clause>();
         neg = new ArrayList<Clause>();
     }
