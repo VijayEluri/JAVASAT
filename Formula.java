@@ -37,7 +37,7 @@ public class Formula {
         rankArray = new float[2][numVariables];
         booleanStack = new Stack<Boolean>();
         hashObjectStack = new Stack<HashObject>();
-		powerMap = new HashMap<Integer, Double>();
+        powerMap = new HashMap<Integer, Double>();
         populateHashMap();
         rankVariables();
     }
@@ -129,8 +129,8 @@ public class Formula {
         int i;
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
-	        rankArray[0][i - 1] = i;            // Stores the Variable in the first column
-	        rankArray[1][i - 1] = 0.0f;//sum;          // Stores the Ranking in the second column
+            rankArray[0][i - 1] = i;            // Stores the Variable in the first column
+            rankArray[1][i - 1] = 0.0f;//sum;          // Stores the Ranking in the second column
         }
 
         // mergeSort();
@@ -146,7 +146,7 @@ public class Formula {
         int maxValueKey = -1;
         float currentMaxRank;
         float sum = 0;
-		double tmp;
+        double tmp;
         double maxValue = 0;
 
         int pSize, nSize, bigger, s;
@@ -319,7 +319,7 @@ public class Formula {
         Clause clause;
         int var, negkey, rVarSize, rClauseSize, i, j, actualSize;
         if (varSetTo) {
-            negkey = -key; //key * -1;
+            negkey = -key;
             rVarSize = rePopObj.negSize();
             rClauseSize = rePopObj.posSize();
             for (i = 0; i < rClauseSize; i++) {
