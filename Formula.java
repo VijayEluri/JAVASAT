@@ -93,7 +93,7 @@ public class Formula {
      * Populate the hash map.
      */
     private void populateHashMap() {
-        hashMap = new HashMap<Integer, HashObject>(numVariables);
+        hashMap = new HashMap<Integer, HashObject>(1 + (int) (numVariables / 0.75));
         Clause clauseAtI;
         HashObject hashTmp;
         int clauseVar,clauseVarKey,i,j;
