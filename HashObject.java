@@ -8,10 +8,11 @@ public class HashObject {
 
     final private ArrayList<Clause> pos;
     final private ArrayList<Clause> neg;
-    private int variableNumber;
-    public HashObject() {
+    final private int variableNumber;
+    public HashObject(final int variableNumber) {
         pos = new ArrayList<Clause>();
         neg = new ArrayList<Clause>();
+        this.variableNumber = variableNumber;
     }
 
     public void removeClause(final Clause clause) {
@@ -66,10 +67,6 @@ public class HashObject {
         String returnString = pos.toString()+" ";
         returnString += neg.toString();
         return returnString;
-    }
-
-    public void variableNumber(final int variable) {
-        variableNumber = variable;
     }
 
     public int getVariableNumber() {

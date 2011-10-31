@@ -107,8 +107,7 @@ public class Formula {
                 clauseVarKey = abs(clauseVar); //abs of variable for key
                 prevHashObj = hashMap.get(clauseVarKey);
                 if (prevHashObj == null) {
-                    hashTmp = new HashObject();
-                    hashTmp.variableNumber(clauseVarKey);
+                    hashTmp = new HashObject(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
                     prevHashObj = hashTmp;
                 }
