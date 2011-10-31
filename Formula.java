@@ -97,7 +97,6 @@ public class Formula {
         Clause clauseAtI;
         HashObject hashTmp;
         int clauseVar,clauseVarKey,i,j;
-        HashObject prevHashObj;
         int clauseAtISize;
         for (i = 0; i < numClauses; i++) {
             clauseAtI = clauseList[i];
@@ -105,16 +104,15 @@ public class Formula {
             for (j = 0; j < clauseAtISize; j++) {
                 clauseVar = clauseAtI.get(j);
                 clauseVarKey = abs(clauseVar); //abs of variable for key
-                prevHashObj = hashMap.get(clauseVarKey);
-                if (prevHashObj == null) {
+                hashTmp = hashMap.get(clauseVarKey);
+                if (hashTmp == null) {
                     hashTmp = new HashObject(clauseVarKey);
                     hashMap.put(clauseVarKey, hashTmp);
-                    prevHashObj = hashTmp;
                 }
                 if (clauseVar > 0) {
-                    prevHashObj.addClausePos(clauseAtI);
+                    hashTmp.addClausePos(clauseAtI);
                 } else {
-                    prevHashObj.addClauseNeg(clauseAtI);
+                    hashTmp.addClauseNeg(clauseAtI);
                 }
             }
         }
