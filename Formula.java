@@ -24,9 +24,9 @@ public class Formula {
     private HashMap<Integer, HashObject> hashMap;
     private HashObject hashObj;
     private int numVariables,numClauses;
-    private int shift = 0;
+    private int shift;
     private boolean clauseSizeZeroResult;
-    private boolean justBackTracked = false;
+    private boolean justBackTracked;
     /**
      * Instantiates a new formula.
      *
