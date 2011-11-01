@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 import java.util.EmptyStackException;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import static java.lang.Math.abs;
 
 /**
@@ -52,7 +54,7 @@ public class Formula {
         int clause, i, nextVar, size;
         int tmp[];
         try {
-            sc = new Scanner(new File(fileName));
+            sc = new Scanner(new BufferedInputStream(new FileInputStream(fileName)));
         } catch (FileNotFoundException e) {
             System.exit(1);
         }
