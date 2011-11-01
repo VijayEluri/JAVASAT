@@ -73,9 +73,6 @@ public class Formula {
             nextVar = sc.nextInt();
             while (nextVar != 0) {
                 list.add(nextVar);
-                if (nextVar == 0) {
-                    break;
-                }
                 nextVar = sc.nextInt();
             }
             size = list.size();
