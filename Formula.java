@@ -136,14 +136,12 @@ public class Formula {
      * Re-rank variables.
      */
     public void reRankVariables() {
-        //Clause tmpClause;
-        //boolean swapLargest = false;
         int clength, i, currentMaxKey;
-        int maxValueKey = -1;
+        int maxValueKey = 0;
         float currentMaxRank;
-        float sum = 0;
+        float sum = 0.0f;
         Double tmp;
-        double maxValue = 0;
+        double maxValue = 0.0d;
 
         int pSize, nSize, bigger, s;
         for (i = shift; i < numVariables; i++) {
