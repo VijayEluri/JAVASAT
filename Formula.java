@@ -198,21 +198,19 @@ public class Formula {
     }
 
     private int unitPropCheck(){
-        int unitVar, unitKey;
-        unitKey = lengthOneCheck();
+        int unitVar = 0;
+        int unitKey = lengthOneCheck();
         if(unitKey != 0){
-            unitVar = (unitKey < 0 ) ? (int) rankArray[0][abs(unitKey)]*-1 : (int) rankArray[0][abs(unitKey)];
-            shiftToUnit(unitKey);
+            int absUnitKey = abs(unitKey);
+            unitVar = (unitKey < 0 ) ? (int) rankArray[0][absUnitKey] * -1 : (int) rankArray[0][absUnitKey];
+            shiftToUnit(absUnitKey);
         }
-        else
-            unitVar = 0;
         return unitVar;
     }
 
-    private void shiftToUnit(final int unitKey){
+    private void shiftToUnit(final int absUnitKey){
         int currentMaxKey;
         float currentMaxRank;
-        int absUnitKey = abs(unitKey);
 
         currentMaxKey = (int) rankArray[0][shift];
         currentMaxRank = rankArray[1][shift];
