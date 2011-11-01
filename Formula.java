@@ -376,7 +376,7 @@ public class Formula {
     public boolean clauseSizeZero() {
         final int length = clauseList.length;
         for (int i = 0; i < length; i++) {
-            if (((Clause) clauseList[i]).size() == 0) {
+            if ( clauseList[i].size() == 0) {
                 return (clauseSizeZeroResult = true);
             }
         }
