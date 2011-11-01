@@ -59,9 +59,8 @@ public class Formula {
             System.exit(1);
         }
 
-        while (sc.findInLine("p cnf") == null) {
-            sc.nextLine();
-        }
+        if(sc.findWithinHorizon("p cnf", 0) == null)
+            System.exit(2);
 
         numVariables = sc.nextInt();
         numClauses = sc.nextInt();
