@@ -3,8 +3,10 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Stack;
-import java.util.EmptyStackException;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import static java.lang.Math.abs;
@@ -18,12 +20,12 @@ import static java.lang.Math.abs;
 public class Formula {
 
     private Scanner sc;
-    final private Stack<Boolean> booleanStack;
-    final private Stack<HashObject> hashObjectStack;
+    final Deque<Boolean> booleanStack;
+    final Deque<HashObject> hashObjectStack;
     private float rankArray[][];
-    private HashMap<Integer, Double> powerMap;
+    private Map<Integer, Double> powerMap;
     private Clause[] clauseList;
-    private HashMap<Integer, HashObject> hashMap;
+    private Map<Integer, HashObject> hashMap;
     private HashObject hashObj;
     private int numVariables,numClauses;
     private int shift;
@@ -37,8 +39,8 @@ public class Formula {
     Formula(final String fileName) {
         importCNF(fileName);
         rankArray = new float[2][numVariables];
-        booleanStack = new Stack<Boolean>();
-        hashObjectStack = new Stack<HashObject>();
+        booleanStack = new ArrayDeque<Boolean>();
+        hashObjectStack = new ArrayDeque<HashObject>();
         powerMap = new HashMap<Integer, Double>();
         populateHashMap();
         rankVariables();
@@ -146,7 +148,7 @@ public class Formula {
         for (i = shift; i < numVariables; i++) {
             hashObj = hashMap.get((int) rankArray[0][i]);
             if (hashObj == null) {
-                rankArray[1][i] = 0; //not sure if good/bad
+                // rankArray[1][i] = 0; //not sure if good/bad
                 continue;
             }
             pSize = hashObj.posSize();
@@ -279,8 +281,8 @@ public class Formula {
           ((booleanValue) ? nextVarObj.getN(i) : nextVarObj.getP(i)).removeVar(varNeg);
        }
 
-       hashObjectStack.push(nextVarObj);
-       booleanStack.push(booleanValue);
+       hashObjectStack.addFirst(nextVarObj);
+       booleanStack.addFirst(booleanValue);
        justBackTracked = false;
        shift++;
    }
@@ -288,14 +290,14 @@ public class Formula {
     /**
      * Back tracks up the tree.
      */
-    public void backTrack() throws EmptyStackException {
+    public void backTrack() throws NoSuchElementException {
         //  Reduce runtime overhead && clean up code
-        while (!booleanStack.pop()) {
+        while (!booleanStack.removeFirst()) {
             shift--;
-            rePopulate((int) rankArray[0][shift], hashObjectStack.pop(), false);
+            rePopulate((int) rankArray[0][shift], hashObjectStack.removeFirst(), false);
         }
         shift--;
-        rePopulate((int) rankArray[0][shift], hashObjectStack.pop(), true);
+        rePopulate((int) rankArray[0][shift], hashObjectStack.removeFirst(), true);
         justBackTracked = true;
     }
 
@@ -393,7 +395,7 @@ public class Formula {
      * @return true, if successful
      */
     public boolean validSolution() {
-        return ( !clauseSizeZero() && (hashMap.isEmpty() || allEmptyKeyMap())); // ? true : false;
+        return ( !clauseSizeZero() && (hashMap.isEmpty() || allEmptyKeyMap()));
     }
 
     /**
@@ -521,11 +523,11 @@ public class Formula {
      */
     public void printSolution() {
         while (!hashObjectStack.isEmpty()) {
-            if (booleanStack.pop()) {
-                System.out.print(hashObjectStack.pop().getVariableNumber()+" ");
+            if (booleanStack.removeFirst()) {
+                System.out.print(hashObjectStack.removeFirst().getVariableNumber()+" ");
             } else {
                 // If false negate variable
-                System.out.print(-hashObjectStack.pop().getVariableNumber()+" ");
+                System.out.print(-hashObjectStack.removeFirst().getVariableNumber()+" ");
             }
         }
     }

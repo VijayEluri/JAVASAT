@@ -1,4 +1,4 @@
-import java.util.EmptyStackException;
+import java.util.NoSuchElementException;
 
 public final class Solver {
 
@@ -12,7 +12,7 @@ public final class Solver {
                     formula.forwardTrack();
                 }
             }
-        } catch (EmptyStackException e) {
+        } catch (NoSuchElementException e) {
             // Empty Stack print No Solution & Exit
             System.out.println("Unsolvable Solution");
             System.exit(0);
