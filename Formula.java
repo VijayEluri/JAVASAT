@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.util.Arrays;
 import static java.lang.Math.abs;
 
 /**
@@ -19,18 +21,19 @@ import static java.lang.Math.abs;
  */
 public class Formula {
 
-    private Scanner sc;
-    final Deque<Boolean> booleanStack;
-    final Deque<HashObject> hashObjectStack;
-    private float rankArray[][];
-    private Map<Integer, Double> powerMap;
+    private final Deque<Boolean> booleanStack;
+    private final Deque<HashObject> hashObjectStack;
+    private final double rankArray[][];
+    private final Map<Integer, Double> powerMap;
     private Clause[] clauseList;
-    private Map<Integer, HashObject> hashMap;
+    private final Map<Integer, HashObject> hashMap;
+
     private HashObject hashObj;
     private int numVariables,numClauses;
     private int shift;
     private boolean clauseSizeZeroResult;
     private boolean justBackTracked;
+
     /**
      * Instantiates a new formula.
      *
@@ -38,10 +41,11 @@ public class Formula {
      */
     Formula(final String fileName) {
         importCNF(fileName);
-        rankArray = new float[2][numVariables];
+        rankArray = new double[2][numVariables];
         booleanStack = new ArrayDeque<Boolean>();
         hashObjectStack = new ArrayDeque<HashObject>();
         powerMap = new HashMap<Integer, Double>();
+        hashMap = new HashMap<Integer, HashObject>(1 + (int) (numVariables / 0.75));
         populateHashMap();
         rankVariables();
     }
@@ -53,10 +57,9 @@ public class Formula {
      * @param fileName the file name
      */
     private void importCNF(final String fileName) {
-        int clause, i, nextVar, size;
-        int tmp[];
+        Scanner sc = null;
         try {
-            sc = new Scanner(new BufferedInputStream(new FileInputStream(fileName)));
+            sc = new Scanner(new BufferedInputStream(new FileInputStream(fileName)), "UTF-8");
         } catch (FileNotFoundException e) {
             System.exit(1);
         }
@@ -67,37 +70,34 @@ public class Formula {
         numVariables = sc.nextInt();
         numClauses = sc.nextInt();
         clauseList = new Clause[numClauses];
-        final ArrayList<Integer> list = new ArrayList<Integer>(numVariables/4);
 
-        /*
-         * Populate the clause list
-         */
-        for (clause = 0; sc.hasNextInt(); clause++) {
-            nextVar = sc.nextInt();
-            while (nextVar != 0) {
-                list.add(nextVar);
-                nextVar = sc.nextInt();
+        int start = 0;
+        int clause = 0;
+        int end = 0;
+        int[] intBuffer = new int[numVariables*numClauses];
+        for(int i = 0; sc.hasNextInt(); i++) {
+            intBuffer[i] = sc.nextInt();
+            if(intBuffer[i] == 0){
+                clauseList[clause] = new Clause(Arrays.copyOfRange(intBuffer, start, end));
+                start = i + 1;
+                end = start;
+                clause++;
+            } else {
+                end++;
             }
-            size = list.size();
-            tmp = new int[size];
-            for (i = 0; i < size; i++) {
-               tmp[i] = list.get(i);
-            }
-            clauseList[clause] = new Clause(size, tmp );
-            list.clear();
         }
+
         sc.close();
+
     }
 
     /**
      * Populate the hash map.
      */
     private void populateHashMap() {
-        hashMap = new HashMap<Integer, HashObject>(1 + (int) (numVariables / 0.75));
         Clause clauseAtI;
         HashObject hashTmp;
-        int clauseVar,clauseVarKey,i,j;
-        int clauseAtISize;
+        int clauseVar,clauseVarKey,i,j,clauseAtISize;
         for (i = 0; i < numClauses; i++) {
             clauseAtI = clauseList[i];
             clauseAtISize = clauseAtI.size();
@@ -127,21 +127,19 @@ public class Formula {
 
         for (i = 1; i <= numVariables; i++) {     // Creates List
             rankArray[0][i - 1] = i;            // Stores the Variable in the first column
-            rankArray[1][i - 1] = 0.0f;//sum;          // Stores the Ranking in the second column
+            // rankArray[1][i - 1] = 0.0f;//sum;          // Stores the Ranking in the second column
         }
-
-        // mergeSort();
     }
 
     /**
      * Re-rank variables.
      */
     public void reRankVariables() {
-        int clength, i, currentMaxKey;
+        int i;
         int maxValueKey = 0;
-        float currentMaxRank;
-        float sum = 0.0f;
-        Double tmp;
+        double currentMaxKey;
+        double currentMaxRank;
+        double sum = 0.0d;
         double maxValue = 0.0d;
 
         int pSize, nSize, bigger, s;
@@ -156,26 +154,10 @@ public class Formula {
             bigger = nSize < pSize ? pSize : nSize;
             for (s = 0; s < bigger; s++) {
                 if (s < pSize) {
-                    clength = hashObj.getP(s).size();
-                    tmp = powerMap.get(clength);
-                    if (tmp != null) {
-                        sum += tmp;
-                    } else {
-                        tmp =  Math.pow(2, (clength * -1));
-                        sum += tmp;
-                        powerMap.put(clength, tmp);
-                    }
+                    sum += getCachedPow(hashObj.getP(s).size());
                 }
                 if (s < nSize) {
-                    clength = hashObj.getN(s).size();
-                    tmp = powerMap.get(clength);
-                    if (tmp != null) {
-                        sum += tmp;
-                    } else {
-                        tmp =  Math.pow(2, (clength * -1));
-                        sum += tmp;
-                        powerMap.put(clength, tmp);
-                    }
+                    sum += getCachedPow(hashObj.getN(s).size());
                 }
             }
 
@@ -185,11 +167,11 @@ public class Formula {
             }
 
             rankArray[1][i] = sum;          // Stores the Ranking in the second column
-            sum = 0;
+            sum = 0.0d;
         }
 
         //Switch the maxValueKey to the shift position
-        currentMaxKey = (int) rankArray[0][shift];
+        currentMaxKey = rankArray[0][shift];
         currentMaxRank = rankArray[1][shift];
         rankArray[0][shift] = rankArray[0][maxValueKey];
         rankArray[1][shift] = rankArray[1][maxValueKey];
@@ -198,22 +180,31 @@ public class Formula {
         rankArray[1][maxValueKey] = currentMaxRank;
     }
 
+    private double getCachedPow(final int exponent){
+        Double tmp = powerMap.get(exponent);
+        if(tmp == null) {
+            tmp = Math.pow(2, (-exponent));
+             powerMap.put(exponent, tmp);
+        }
+        return tmp;
+    }
+
     private int unitPropCheck(){
         int unitVar = 0;
         int unitKey = lengthOneCheck();
         if(unitKey != 0){
             int absUnitKey = abs(unitKey);
-            unitVar = (unitKey < 0 ) ? (int) rankArray[0][absUnitKey] * -1 : (int) rankArray[0][absUnitKey];
+            unitVar = (unitKey < 0 ) ? -((int) rankArray[0][absUnitKey] ): (int) rankArray[0][absUnitKey];
             shiftToUnit(absUnitKey);
         }
         return unitVar;
     }
 
     private void shiftToUnit(final int absUnitKey){
-        int currentMaxKey;
-        float currentMaxRank;
+        double currentMaxKey;
+        double currentMaxRank;
 
-        currentMaxKey = (int) rankArray[0][shift];
+        currentMaxKey = rankArray[0][shift];
         currentMaxRank = rankArray[1][shift];
         rankArray[0][shift] = rankArray[0][absUnitKey];
         rankArray[1][shift] = rankArray[1][absUnitKey];
@@ -248,7 +239,7 @@ public class Formula {
         * to branch true or false by checking if it has
         * just back tracked or not.
         */
-       booleanValue = (!justBackTracked && var > 0) ? true : false;  //
+       booleanValue = (!justBackTracked && var > 0);
        var = absKey; //abs(var); // always positive: p or n
        varNeg = booleanValue ? -var : var;//var * -1 : var; //flip for negitive: pos * -1 = n : neg * -1 = p
        if (booleanValue) {
@@ -260,7 +251,7 @@ public class Formula {
        }
 
        for (i = 0; i < listSize; i++) {
-           clause = (booleanValue) ? (Clause) nextVarObj.getP(i) : (Clause) nextVarObj.getN(i);
+           clause = (booleanValue) ? nextVarObj.getP(i) : nextVarObj.getN(i);
            actualSize = clause.actualSize();
            for (j = 0; j < actualSize; j++) {
                key = clause.get(j);
@@ -278,7 +269,7 @@ public class Formula {
         * from all clauses in clauseList.
         */
        for (i = 0; i < opsitListSize; i++) {
-          ((booleanValue) ? nextVarObj.getN(i) : nextVarObj.getP(i)).removeVar(varNeg);
+          ( (booleanValue) ? nextVarObj.getN(i) : nextVarObj.getP(i) ).removeVar(varNeg);
        }
 
        hashObjectStack.addFirst(nextVarObj);
@@ -371,12 +362,14 @@ public class Formula {
      */
     public boolean clauseSizeZero() {
         final int length = clauseList.length;
+        clauseSizeZeroResult = false;
         for (int i = 0; i < length; i++) {
             if ( clauseList[i].size() == 0) {
-                return (clauseSizeZeroResult = true);
+                clauseSizeZeroResult = true;
+                break;
             }
         }
-        return (clauseSizeZeroResult = false);
+        return clauseSizeZeroResult;
     }
 
     /**
@@ -385,7 +378,7 @@ public class Formula {
      * @see clauseSizeZero()
      */
 
-    public boolean getLastClauseSizeResult() {
+    public boolean getCachedClauseSizeZeroResult() {
         return clauseSizeZeroResult;
     }
 
@@ -446,89 +439,20 @@ public class Formula {
     }
 
     /**
-     * Merge sort.
-     */
-    private void mergeSort() {
-        final float temp[][] = new float[2][numVariables];
-        mergeSort(temp, 0 + shift, numVariables - 1);
-    }
-
-    /**
-     * Merge sort.
-     *
-     * @param temp the temp Array
-     * @param lowerBound the lower bound
-     * @param upperBound the upper bound
-     */
-    private void mergeSort(final float temp[][],final int lowerBound, final int upperBound) {
-        if (lowerBound == upperBound) {
-            return;                   // If index == 1 do nothing
-        } else {
-            final int mid = (lowerBound + upperBound) / 2;    // Get midpoint
-
-            mergeSort(temp, lowerBound, mid);     // Lower Half
-
-            mergeSort(temp, mid + 1, upperBound);     // Upper Half
-
-            merge(temp, lowerBound, mid + 1, upperBound); // Merge both Halves
-
-        }
-    }
-
-    /**
-     * Merge.
-     *
-     * @param temp the temp array
-     * @param lower the lower
-     * @param highMid the high mid
-     * @param upperBound the upper bound
-     */
-    private void merge(float temp[][], int lower, int highMid, int upperBound) {
-        int i = 0;              // temp index
-
-        final int lowerBound = lower;       // saves lower value
-
-        final int lowMid = highMid - 1;       // sets the lower mid point
-
-        final int n = upperBound - lowerBound + 1;  // number of ints in range
-
-        while (lower <= lowMid && highMid <= upperBound) {
-            if (rankArray[1][lower] > rankArray[1][highMid]) {
-                temp[0][i] = rankArray[0][lower];
-                temp[1][i++] = rankArray[1][lower++];
-            } else {
-                temp[0][i] = rankArray[0][highMid];
-                temp[1][i++] = rankArray[1][highMid++];
-            }
-        }
-
-        while (lower <= lowMid) {
-            temp[0][i] = rankArray[0][lower];
-            temp[1][i++] = rankArray[1][lower++];
-        }
-
-        while (highMid <= upperBound) {
-            temp[0][i] = rankArray[0][highMid];
-            temp[1][i++] = rankArray[1][highMid++];
-        }
-
-        for (i = 0; i < n; i++) {
-            rankArray[1][lowerBound + i] = temp[1][i];
-            rankArray[0][lowerBound + i] = temp[0][i];
-        }
-    }
-
-    /**
      * Print Solution Set.
      */
     public void printSolution() {
+        final StringBuilder sb = new StringBuilder();
+        final String space = " ";
         while (!hashObjectStack.isEmpty()) {
             if (booleanStack.removeFirst()) {
-                System.out.print(hashObjectStack.removeFirst().getVariableNumber()+" ");
+                sb.append(hashObjectStack.removeFirst().getVariableNumber());
             } else {
                 // If false negate variable
-                System.out.print(-hashObjectStack.removeFirst().getVariableNumber()+" ");
+                sb.append(-hashObjectStack.removeFirst().getVariableNumber());
             }
+            sb.append(space);
         }
+        System.out.println(sb.toString());
     }
 }

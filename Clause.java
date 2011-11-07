@@ -14,10 +14,10 @@ public class Clause {
     private int size,i;
     final private int length;
 
-    public Clause(final int size,final int a[]) {
-        variables = a;
-        length = size;
-        this.size = size;
+    public Clause(final int a[]) {
+        this.variables = a;
+        this.length = a.length;
+        this.size = a.length;
     }
 
     public int size() {

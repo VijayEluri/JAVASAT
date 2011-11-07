@@ -6,7 +6,7 @@ public final class Solver {
         final Formula formula = new Formula(args[0]);
         try {
             while (!formula.validSolution()) {
-                if (formula.getLastClauseSizeResult()) {
+                if (formula.getCachedClauseSizeZeroResult()) {
                     formula.backTrack();
                 } else {
                     formula.forwardTrack();
