@@ -135,14 +135,12 @@ public class Formula {
      * Re-rank variables.
      */
     public void reRankVariables() {
-        int i;
         int maxValueKey = 0;
-        double currentMaxKey;
-        double currentMaxRank;
+
         double sum = 0.0d;
         double maxValue = 0.0d;
 
-        int pSize, nSize, bigger, s;
+        int pSize, nSize, bigger, s, i;
         for (i = shift; i < numVariables; i++) {
             hashObj = hashMap.get((int) rankArray[0][i]);
 
@@ -168,8 +166,9 @@ public class Formula {
         }
 
         //Switch the maxValueKey to the shift position
-        currentMaxKey = rankArray[0][shift];
-        currentMaxRank = rankArray[1][shift];
+        double currentMaxKey = rankArray[0][shift];
+        double currentMaxRank = rankArray[1][shift];
+
         rankArray[0][shift] = rankArray[0][maxValueKey];
         rankArray[1][shift] = rankArray[1][maxValueKey];
 
@@ -198,11 +197,9 @@ public class Formula {
     }
 
     private void shiftToUnit(final int absUnitKey){
-        double currentMaxKey;
-        double currentMaxRank;
+        double currentMaxKey = rankArray[0][shift];
+        double currentMaxRank = rankArray[1][shift];
 
-        currentMaxKey = rankArray[0][shift];
-        currentMaxRank = rankArray[1][shift];
         rankArray[0][shift] = rankArray[0][absUnitKey];
         rankArray[1][shift] = rankArray[1][absUnitKey];
 
