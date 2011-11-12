@@ -143,7 +143,10 @@ public class Formula {
         int pSize, nSize, bigger, s, i;
         for (i = shift; i < numVariables; i++) {
             hashObj = hashMap.get((int) rankArray[0][i]);
-
+            if (hashObj == null) {
+                // rankArray[1][i] = 0; //not sure if good/bad
+                continue;
+            }
             pSize = hashObj.posSize();
             nSize = hashObj.negSize();
             bigger = nSize < pSize ? pSize : nSize;
@@ -250,7 +253,10 @@ public class Formula {
            for (j = 0; j < actualSize; j++) {
                key = clause.get(j);
                if (key != 0 && (absKey = abs(key)) != var) {
-                   hashMap.get(absKey).removeClause(clause);
+                   hashObj = (HashObject) hashMap.get(absKey);
+                   if (hashObj != null) {
+                       hashObj.removeClause(clause);
+                   }
                }
            }
        }
@@ -393,7 +399,7 @@ public class Formula {
         HashObject tmp;
         for (i = shift; i < numVariables; i++) {
             tmp = hashMap.get((int) rankArray[0][i]);
-            if (!tmp.posEmpty() || !tmp.negEmpty()) {
+            if (tmp != null && (!tmp.posEmpty() || !tmp.negEmpty())) {
                 return false;
             }
         }
@@ -409,17 +415,21 @@ public class Formula {
 
         for (k = shift; k < numVariables; k++) {
             tmp = hashMap.get((int) rankArray[0][k]);
-            size = tmp.posSize();
-            for (i = 0; i < size; i++) {
-                tmpVar = tmp.getP(i).lengthOne();
-                if (tmpVar != 0)
-                    return k;
-            }
-            size = tmp.negSize();
-            for (i = 0; i < size; i++) {
-                tmpVar = tmp.getN(i).lengthOne();
-                if (tmpVar != 0)
-                    return -k;
+            if (tmp != null) {
+                size = tmp.posSize();
+                for (i = 0; i < size; i++) {
+                    tmpVar = tmp.getP(i).lengthOne();
+                    if (tmpVar != 0) {
+                        return k;
+                    }
+                }
+                size = tmp.negSize();
+                for (i = 0; i < size; i++) {
+                    tmpVar = tmp.getN(i).lengthOne();
+                    if (tmpVar != 0) {
+                        return -k;
+                    }
+                }
             }
         }
         return 0;
