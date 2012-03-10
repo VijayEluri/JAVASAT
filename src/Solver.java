@@ -1,3 +1,5 @@
+package com.trevorstevens.javasat;
+
 import java.util.NoSuchElementException;
 
 public final class Solver {
@@ -19,7 +21,7 @@ public final class Solver {
         }
 
         System.out.println("Solvable Solution");
-        formula.printSolution();
+        //formula.printSolution();
         System.exit(0);
     }
 }

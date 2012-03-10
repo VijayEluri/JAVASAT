@@ -1,3 +1,5 @@
+package com.trevorstevens.javasat;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -42,8 +44,8 @@ public class Formula {
     Formula(final String fileName) {
         importCNF(fileName);
         rankArray = new double[2][numVariables];
-        booleanStack = new ArrayDeque<Boolean>();
-        hashObjectStack = new ArrayDeque<HashObject>();
+        booleanStack = new ArrayDeque<Boolean>(numVariables);
+        hashObjectStack = new ArrayDeque<HashObject>(numVariables);
         powerMap = new HashMap<Integer, Double>();
         hashMap = new HashMap<Integer, HashObject>(1 + (int) (numVariables / 0.75));
         populateHashMap();

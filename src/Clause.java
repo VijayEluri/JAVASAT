@@ -1,3 +1,5 @@
+package com.trevorstevens.javasat;
+
 /*
  * Stores the variables contained in each Clause of the Formula
  * To be Stored in HashObjects two ArrayLists

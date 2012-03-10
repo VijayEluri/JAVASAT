@@ -1,3 +1,5 @@
+package com.trevorstevens.javasat;
+
 import java.util.ArrayList;
 
 /**
